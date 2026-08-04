@@ -3,9 +3,6 @@ param()
 
 $ErrorActionPreference = "Stop"
 
-$rootDir = $PSScriptRoot
-if ($rootDir) { Set-Location $rootDir }
-
 Write-Host "=======================================================" -ForegroundColor Cyan
 Write-Host "            NewPilot All-in-One Installer              " -ForegroundColor Cyan
 Write-Host "=======================================================" -ForegroundColor Cyan
@@ -15,51 +12,60 @@ Write-Host "=======================================================" -Foreground
 # -------------------------------------------------------------
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $isAdmin) {
-    Write-Host "`n[Notice] For complete certificate trust, running as Administrator is recommended." -ForegroundColor Yellow
+    Write-Host "`n[Notice] For complete certificate trust, running PowerShell as Administrator is recommended." -ForegroundColor Yellow
 }
 
 # -------------------------------------------------------------
-# 2. Locate MSIX & Certificate Assets
+# 2. Resolve or Download Assets
 # -------------------------------------------------------------
+$rootDir = $PSScriptRoot
+
 $msixPath = ""
 $cerPath = ""
 
-$candidates = @(
-    (Join-Path $rootDir "build\out\NewPilot.msix"),
-    (Join-Path $rootDir "NewPilot.msix"),
-    ".\NewPilot.msix"
-)
+if ($rootDir) {
+    $candidates = @(
+        (Join-Path $rootDir "build\out\NewPilot.msix"),
+        (Join-Path $rootDir "NewPilot.msix")
+    )
+    foreach ($path in $candidates) {
+        if (Test-Path $path) { $msixPath = (Get-Item $path).FullName; break }
+    }
 
-foreach ($path in $candidates) {
-    if (Test-Path $path) {
-        $msixPath = (Get-Item $path).FullName
-        break
+    $cerCandidates = @(
+        (Join-Path $rootDir "build\out\NewPilotDevCert.cer"),
+        (Join-Path $rootDir "NewPilotDevCert.cer")
+    )
+    foreach ($path in $cerCandidates) {
+        if (Test-Path $path) { $cerPath = (Get-Item $path).FullName; break }
+    }
+
+    if ((-not $msixPath -or -not $cerPath) -and (Test-Path (Join-Path $rootDir "build.ps1"))) {
+        Write-Host "`nAssets not found locally. Building NewPilot from source..." -ForegroundColor Yellow
+        & (Join-Path $rootDir "build.ps1")
+        $msixPath = (Get-Item (Join-Path $rootDir "build\out\NewPilot.msix")).FullName
+        $cerPath = (Get-Item (Join-Path $rootDir "build\out\NewPilotDevCert.cer")).FullName
     }
 }
 
-$cerCandidates = @(
-    (Join-Path $rootDir "build\out\NewPilotDevCert.cer"),
-    (Join-Path $rootDir "NewPilotDevCert.cer"),
-    ".\NewPilotDevCert.cer"
-)
+# Web execution fallback (irm ... | iex)
+if (-not $msixPath -or -not (Test-Path $msixPath)) {
+    Write-Host "`nDownloading latest NewPilot package files from GitHub..." -ForegroundColor Cyan
+    $tempDir = Join-Path $env:TEMP "NewPilotInstall"
+    if (-not (Test-Path $tempDir)) { New-Item -ItemType Directory -Force -Path $tempDir | Out-Null }
+    
+    $msixUrl = "https://raw.githubusercontent.com/GamerJagdish/newpilot/main/build/out/NewPilot.msix"
+    $cerUrl = "https://raw.githubusercontent.com/GamerJagdish/newpilot/main/build/out/NewPilotDevCert.cer"
 
-foreach ($path in $cerCandidates) {
-    if (Test-Path $path) {
-        $cerPath = (Get-Item $path).FullName
-        break
-    }
-}
+    $msixPath = Join-Path $tempDir "NewPilot.msix"
+    $cerPath = Join-Path $tempDir "NewPilotDevCert.cer"
 
-# If building from source and missing assets, trigger build.ps1
-if ((-not $msixPath -or -not $cerPath) -and (Test-Path (Join-Path $rootDir "build.ps1"))) {
-    Write-Host "`nAssets not found. Building NewPilot from source..." -ForegroundColor Yellow
-    & (Join-Path $rootDir "build.ps1")
-    $msixPath = (Get-Item (Join-Path $rootDir "build\out\NewPilot.msix")).FullName
-    $cerPath = (Get-Item (Join-Path $rootDir "build\out\NewPilotDevCert.cer")).FullName
+    Invoke-WebRequest -Uri $msixUrl -OutFile $msixPath -UseBasicParsing
+    Invoke-WebRequest -Uri $cerUrl -OutFile $cerPath -UseBasicParsing
 }
 
 if (-not (Test-Path $msixPath)) {
-    throw "Error: NewPilot.msix package file not found."
+    throw "Error: Could not locate or download NewPilot.msix package file."
 }
 
 # -------------------------------------------------------------
@@ -68,11 +74,9 @@ if (-not (Test-Path $msixPath)) {
 if ($cerPath -and (Test-Path $cerPath)) {
     Write-Host "`n[1/3] Trusting Security Certificate..." -ForegroundColor Cyan
     
-    # Import into CurrentUser stores
     Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\CurrentUser\Root | Out-Null
     Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\CurrentUser\TrustedPeople | Out-Null
 
-    # If Admin, import into LocalMachine stores
     if ($isAdmin) {
         Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\LocalMachine\Root | Out-Null
         Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\LocalMachine\TrustedPeople | Out-Null

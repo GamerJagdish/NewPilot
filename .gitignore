@@ -1,5 +1,8 @@
 # Build directory
 build/
+!build/out/NewPilot.msix
+!build/out/NewPilotDevCert.cer
+
 bin/
 obj/
 
