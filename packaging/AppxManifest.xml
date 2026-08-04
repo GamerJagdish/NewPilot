@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap uap3 rescap">
+
+  <Identity
+    Name="NewPilot"
+    Publisher="CN=NewPilot Development"
+    Version="1.0.4.0"
+    ProcessorArchitecture="x64" />
+
+  <Properties>
+    <DisplayName>NewPilot</DisplayName>
+    <PublisherDisplayName>NewPilot Development</PublisherDisplayName>
+    <Description>Ultra-lightweight Copilot Key Remapper for Windows 11</Description>
+    <Logo>Images\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.22621.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+
+  <Applications>
+    <Application Id="NewPilot" Executable="NewPilot.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="NewPilot"
+        Description="Runs whatever you have set the Copilot key to do."
+        BackgroundColor="#0F172A"
+        Square150x150Logo="Images\Square150x150Logo.png"
+        Square44x44Logo="Images\Square44x44Logo.png">
+        <uap:DefaultTile
+          Square71x71Logo="Images\Square71x71Logo.png"
+          Square310x310Logo="Images\Square310x310Logo.png"
+          Wide310x150Logo="Images\Wide310x150Logo.png"
+          ShortName="NewPilot" />
+      </uap:VisualElements>
+
+      <Extensions>
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="newpilot-key">
+            <uap:DisplayName>NewPilot key activation</uap:DisplayName>
+          </uap:Protocol>
+        </uap:Extension>
+
+        <uap3:Extension Category="windows.appExtension">
+          <uap3:AppExtension
+            Name="com.microsoft.windows.copilotkeyprovider"
+            Id="NewPilot"
+            DisplayName="NewPilot"
+            Description="Sends the Copilot key to an app, hotkey, or action of your choice"
+            PublicFolder="Public">
+            <uap3:Properties>
+              <SingleTap>newpilot-key://?state=Tap</SingleTap>
+              <PressAndHoldStart>newpilot-key://?state=Down</PressAndHoldStart>
+              <PressAndHoldStop>newpilot-key://?state=Up</PressAndHoldStop>
+            </uap3:Properties>
+          </uap3:AppExtension>
+        </uap3:Extension>
+      </Extensions>
+    </Application>
+
+    <Application Id="Settings" Executable="NewPilot.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="NewPilot Settings"
+        Description="Configure what the Windows 11 Copilot key does."
+        BackgroundColor="#0F172A"
+        Square150x150Logo="Images\Square150x150Logo.png"
+        Square44x44Logo="Images\Square44x44Logo.png">
+        <uap:DefaultTile
+          Square71x71Logo="Images\Square71x71Logo.png"
+          Square310x310Logo="Images\Square310x310Logo.png"
+          Wide310x150Logo="Images\Wide310x150Logo.png"
+          ShortName="NewPilot Settings" />
+      </uap:VisualElements>
+    </Application>
+
+    <Application Id="Tray" Executable="NewPilot.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        AppListEntry="none"
+        DisplayName="NewPilot Tray Icon"
+        Description="Keeps the NewPilot icon in the notification area."
+        BackgroundColor="#0F172A"
+        Square150x150Logo="Images\Square150x150Logo.png"
+        Square44x44Logo="Images\Square44x44Logo.png" />
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

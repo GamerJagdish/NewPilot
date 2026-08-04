@@ -1,0 +1,17 @@
+# Build directory
+build/
+bin/
+obj/
+
+# Visual Studio temporary files
+.vs/
+*.vcxproj.user
+*.vcxproj.filters
+*.user
+*.suo
+*.VC.db
+
+# Temp files
+scratch/
+*.tmp
+*.log
