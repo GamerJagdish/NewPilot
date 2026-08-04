@@ -33,6 +33,7 @@
 #define IDC_BTN_SAVE          2014
 #define IDC_BTN_CANCEL        2015
 #define IDC_BTN_ABOUT         2016
+#define IDC_BTN_OPEN_WIN_SETTINGS 2017
 
 static AppConfig g_config;
 static std::vector<AppInfo> g_installed_apps;
@@ -220,6 +221,10 @@ static LRESULT CALLBACK SettingsWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
             HWND hPresetCombo = CreateWindowW(L"COMBOBOX", NULL, WS_CHILD | CBS_DROPDOWNLIST | WS_VSCROLL, 20, 96, 440, 200, hWnd, (HMENU)IDC_COMBO_PRESET, NULL, NULL);
             SendMessageW(hPresetCombo, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
+            // Button to open Windows 11 Keyboard Settings directly
+            HWND hBtnOpenWinSettings = CreateWindowW(L"BUTTON", L"Open Windows Keyboard Settings", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 20, 140, 440, 32, hWnd, (HMENU)IDC_BTN_OPEN_WIN_SETTINGS, NULL, NULL);
+            SendMessageW(hBtnOpenWinSettings, WM_SETFONT, (WPARAM)g_hFont, TRUE);
+
             // Group Box for System Tray & Startup Options
             HWND hGroupTray = CreateWindowW(L"BUTTON", L"Tray and Startup Options", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 20, 186, 440, 92, hWnd, NULL, NULL, NULL);
             SendMessageW(hGroupTray, WM_SETFONT, (WPARAM)g_hFont, TRUE);
@@ -275,6 +280,8 @@ static LRESULT CALLBACK SettingsWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
                 ActionRunner::run(test_act);
             } else if (id == IDC_BTN_ABOUT) {
                 ShellExecuteW(NULL, L"open", L"https://github.com/GamerJagdish/newpilot", NULL, NULL, SW_SHOWNORMAL);
+            } else if (id == IDC_BTN_OPEN_WIN_SETTINGS) {
+                ShellExecuteW(NULL, L"open", L"ms-settings:personalization-textinput-copilot-hardwarekey", NULL, NULL, SW_SHOWNORMAL);
             } else if (id == IDC_BTN_SAVE) {
                 g_config.tap_action = build_action_from_ui(hWnd);
                 g_config.show_tray_icon = (SendMessageW(GetDlgItem(hWnd, IDC_CHK_SHOW_TRAY), BM_GETCHECK, 0, 0) == BST_CHECKED);

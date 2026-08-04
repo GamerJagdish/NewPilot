@@ -105,13 +105,12 @@ Write-Host "NewPilot package installed successfully!" -ForegroundColor Green
 Write-Host "`n=======================================================" -ForegroundColor Green
 Write-Host "       SUCCESS! NewPilot is installed and ready!        " -ForegroundColor Green
 Write-Host "=======================================================" -ForegroundColor Green
-Write-Host "`nNext Steps:" -ForegroundColor Yellow
-Write-Host "1. Open Windows 11 Settings -> Bluetooth & devices -> Keyboard"
-Write-Host "2. Under 'Customize Copilot key on keyboard', select 'Custom' -> NewPilot"
+
+Write-Host "`nOpening Copilot Key Settings & NewPilot Settings..." -ForegroundColor Cyan
+Start-Process "ms-settings:personalization-textinput-copilot-hardwarekey" -ErrorAction SilentlyContinue
 
 $pkg = Get-AppxPackage -Name "NewPilot"
 if ($pkg) {
-    Write-Host "`nOpening NewPilot Settings window now..." -ForegroundColor Cyan
     Start-Sleep -Seconds 1
     $aumid = "shell:AppsFolder\" + $pkg.PackageFamilyName + "!Settings"
     Start-Process "explorer.exe" -ArgumentList $aumid -ErrorAction SilentlyContinue
