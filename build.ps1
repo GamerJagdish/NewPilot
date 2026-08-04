@@ -56,24 +56,25 @@ $priOut = Join-Path $stagingDir "resources.pri"
 & $makepri createconfig /cf $priConfig /dq en-US /pv 10.0.0 /o | Out-Null
 & $makepri new /pr $stagingDir /cf $priConfig /of $priOut /o | Out-Null
 
-Write-Host "`n=== Packaging MSIX Package with makeappx ===" -ForegroundColor Cyan
-$msixPath = Join-Path $outDir "NewPilot.msix"
-& $makeappx pack /d $stagingDir /p $msixPath /o
+Write-Host "`n=== Packaging Store MSIX Package (Unsigned for Partner Center) ===" -ForegroundColor Cyan
+$storeMsixPath = Join-Path $outDir "NewPilot.Store.msix"
+& $makeappx pack /d $stagingDir /p $storeMsixPath /o
+$storeMsixSizeKB = [math]::Round(((Get-Item $storeMsixPath).Length / 1KB), 2)
+Write-Host "Created Store Package: $storeMsixPath ($storeMsixSizeKB KB)" -ForegroundColor Green
 
-if (-not (Test-Path $msixPath)) {
-    throw "Failed to create MSIX package at $msixPath"
-}
+Write-Host "`n=== Packaging Local Sideload MSIX Package ===" -ForegroundColor Cyan
+$msixPath = Join-Path $outDir "NewPilot.msix"
+Copy-Item $storeMsixPath -Destination $msixPath
 
 $msixSizeKB = [math]::Round(((Get-Item $msixPath).Length / 1KB), 2)
-Write-Host "Created MSIX Package: $msixPath ($msixSizeKB KB)" -ForegroundColor Green
 
-Write-Host "`n=== Managing Developer Certificate ===" -ForegroundColor Cyan
-$certSubject = "CN=NewPilot Development"
+Write-Host "`n=== Managing Developer Certificate (GamerJagdish) ===" -ForegroundColor Cyan
+$certSubject = "CN=GamerJagdish"
 $cert = Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -eq $certSubject } | Select-Object -First 1
 
 if (-not $cert) {
     Write-Host "Creating developer self-signed certificate '$certSubject'..." -ForegroundColor Yellow
-    $cert = New-SelfSignedCertificate -Type Custom -Subject $certSubject -KeyUsage DigitalSignature -FriendlyName "NewPilot Development Certificate" -CertStoreLocation Cert:\CurrentUser\My -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+    $cert = New-SelfSignedCertificate -Type Custom -Subject $certSubject -KeyUsage DigitalSignature -FriendlyName "GamerJagdish Development Certificate" -CertStoreLocation Cert:\CurrentUser\My -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
 }
 
 # Export .cer file
@@ -85,12 +86,13 @@ Write-Host "Exported developer certificate to: $cerPath" -ForegroundColor Green
 Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\CurrentUser\Root | Out-Null
 Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\CurrentUser\TrustedPeople | Out-Null
 
-Write-Host "`n=== Signing MSIX Package with signtool ===" -ForegroundColor Cyan
+Write-Host "`n=== Signing Local Sideload Package ===" -ForegroundColor Cyan
 & $signtool sign /fd SHA256 /sha1 $cert.Thumbprint $msixPath
 
 Write-Host "`n=======================================================" -ForegroundColor Green
-Write-Host "SUCCESS! NewPilot MSIX package is built and signed!" -ForegroundColor Green
-Write-Host "Package path: $msixPath ($msixSizeKB KB)" -ForegroundColor Green
-Write-Host "Certificate path: $cerPath" -ForegroundColor Green
-Write-Host "Executable size: $exePath ($exeSizeKB KB)" -ForegroundColor Green
+Write-Host "SUCCESS! Packages built and ready!" -ForegroundColor Green
+Write-Host "Store Package (Upload to Partner Center): $storeMsixPath ($storeMsixSizeKB KB)" -ForegroundColor Green
+Write-Host "Sideload Package (Local testing): $msixPath ($msixSizeKB KB)" -ForegroundColor Green
+Write-Host "Developer Certificate: $cerPath" -ForegroundColor Green
+Write-Host "Executable Size: $exePath ($exeSizeKB KB)" -ForegroundColor Green
 Write-Host "=======================================================" -ForegroundColor Green
