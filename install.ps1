@@ -2,38 +2,112 @@
 param()
 
 $ErrorActionPreference = "Stop"
+
 $rootDir = $PSScriptRoot
-Set-Location $rootDir
+if ($rootDir) { Set-Location $rootDir }
 
-$msixPath = Join-Path $rootDir "build\out\NewPilot.msix"
-$cerPath = Join-Path $rootDir "build\out\NewPilotDevCert.cer"
+Write-Host "=======================================================" -ForegroundColor Cyan
+Write-Host "            NewPilot All-in-One Installer              " -ForegroundColor Cyan
+Write-Host "=======================================================" -ForegroundColor Cyan
 
-if (-not (Test-Path $msixPath)) {
-    Write-Host "Package not found. Running build.ps1 first..." -ForegroundColor Yellow
-    & (Join-Path $rootDir "build.ps1")
+# -------------------------------------------------------------
+# 1. Check Administrator Privileges
+# -------------------------------------------------------------
+$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $isAdmin) {
+    Write-Host "`n[Notice] For complete certificate trust, running as Administrator is recommended." -ForegroundColor Yellow
 }
 
-Write-Host "=== Installing Developer Certificate ===" -ForegroundColor Cyan
+# -------------------------------------------------------------
+# 2. Locate MSIX & Certificate Assets
+# -------------------------------------------------------------
+$msixPath = ""
+$cerPath = ""
 
-if (Test-Path $cerPath) {
-    Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\CurrentUser\Root | Out-Null
-    Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\CurrentUser\TrustedPeople | Out-Null
+$candidates = @(
+    (Join-Path $rootDir "build\out\NewPilot.msix"),
+    (Join-Path $rootDir "NewPilot.msix"),
+    ".\NewPilot.msix"
+)
 
-    $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    if ($isAdmin) {
-        Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\LocalMachine\Root | Out-Null
-        Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\LocalMachine\TrustedPeople | Out-Null
-        Write-Host "Certificate imported to LocalMachine Root & TrustedPeople." -ForegroundColor Green
-    } else {
-        Write-Host "Certificate imported to CurrentUser Root & TrustedPeople." -ForegroundColor Green
+foreach ($path in $candidates) {
+    if (Test-Path $path) {
+        $msixPath = (Get-Item $path).FullName
+        break
     }
 }
 
-Write-Host "`n=== Installing NewPilot MSIX Package ===" -ForegroundColor Cyan
+$cerCandidates = @(
+    (Join-Path $rootDir "build\out\NewPilotDevCert.cer"),
+    (Join-Path $rootDir "NewPilotDevCert.cer"),
+    ".\NewPilotDevCert.cer"
+)
+
+foreach ($path in $cerCandidates) {
+    if (Test-Path $path) {
+        $cerPath = (Get-Item $path).FullName
+        break
+    }
+}
+
+# If building from source and missing assets, trigger build.ps1
+if ((-not $msixPath -or -not $cerPath) -and (Test-Path (Join-Path $rootDir "build.ps1"))) {
+    Write-Host "`nAssets not found. Building NewPilot from source..." -ForegroundColor Yellow
+    & (Join-Path $rootDir "build.ps1")
+    $msixPath = (Get-Item (Join-Path $rootDir "build\out\NewPilot.msix")).FullName
+    $cerPath = (Get-Item (Join-Path $rootDir "build\out\NewPilotDevCert.cer")).FullName
+}
+
+if (-not (Test-Path $msixPath)) {
+    throw "Error: NewPilot.msix package file not found."
+}
+
+# -------------------------------------------------------------
+# 3. Trust Developer Certificate
+# -------------------------------------------------------------
+if ($cerPath -and (Test-Path $cerPath)) {
+    Write-Host "`n[1/3] Trusting Security Certificate..." -ForegroundColor Cyan
+    
+    # Import into CurrentUser stores
+    Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\CurrentUser\Root | Out-Null
+    Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\CurrentUser\TrustedPeople | Out-Null
+
+    # If Admin, import into LocalMachine stores
+    if ($isAdmin) {
+        Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\LocalMachine\Root | Out-Null
+        Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\LocalMachine\TrustedPeople | Out-Null
+        Write-Host "Certificate trusted in LocalMachine stores." -ForegroundColor Green
+    } else {
+        Write-Host "Certificate trusted in CurrentUser stores." -ForegroundColor Green
+    }
+}
+
+# -------------------------------------------------------------
+# 4. Stop Running Instances & Remove Old Package
+# -------------------------------------------------------------
+Write-Host "`n[2/3] Cleaning previous installation..." -ForegroundColor Cyan
+Stop-Process -Name NewPilot -Force -ErrorAction SilentlyContinue
+Get-AppxPackage -Name "NewPilot" | Remove-AppxPackage -ErrorAction SilentlyContinue
+Write-Host "Cleanup completed." -ForegroundColor Green
+
+# -------------------------------------------------------------
+# 5. Install NewPilot MSIX Package
+# -------------------------------------------------------------
+Write-Host "`n[3/3] Installing NewPilot..." -ForegroundColor Cyan
 Add-AppxPackage -Path $msixPath -ForceApplicationShutdown
+Write-Host "NewPilot package installed successfully!" -ForegroundColor Green
 
 Write-Host "`n=======================================================" -ForegroundColor Green
-Write-Host "SUCCESS! NewPilot installed successfully!" -ForegroundColor Green
-Write-Host "You can now select NewPilot in Windows 11 Settings ->" -ForegroundColor Green
-Write-Host "Bluetooth & devices -> Keyboard -> Customize Copilot key on keyboard" -ForegroundColor Green
+Write-Host "       SUCCESS! NewPilot is installed and ready!        " -ForegroundColor Green
 Write-Host "=======================================================" -ForegroundColor Green
+Write-Host "`nNext Steps:" -ForegroundColor Yellow
+Write-Host "1. Open Windows 11 Settings -> Bluetooth & devices -> Keyboard"
+Write-Host "2. Under 'Customize Copilot key on keyboard', select 'Custom' -> NewPilot"
+
+$pkg = Get-AppxPackage -Name "NewPilot"
+if ($pkg) {
+    Write-Host "`nOpening NewPilot Settings window now..." -ForegroundColor Cyan
+    Start-Sleep -Seconds 1
+    $aumid = "shell:AppsFolder\" + $pkg.PackageFamilyName + "!Settings"
+    Start-Process "explorer.exe" -ArgumentList $aumid -ErrorAction SilentlyContinue
+}

@@ -47,22 +47,15 @@ Other solutions rely on heavy runtimes (.NET 10, Electron, WPF, WinForms), intro
 - **Visual Studio 2022** (MSVC compiler & C++ workload) or CMake
 - **Windows 10/11 SDK** (`makeappx.exe`, `signtool.exe`, `makepri.exe`)
 
-### Quick Sideload Install (1-Click PowerShell)
+### ⚡ Quick 1-Click Installer (PowerShell)
 
-Run PowerShell as Administrator and execute:
-
-```powershell
-.\install.ps1
-```
-
-Or build and package manually:
+Open **PowerShell as Administrator** and paste this 1-line command:
 
 ```powershell
-.\build.ps1
-Import-Certificate -FilePath "build\out\NewPilotDevCert.cer" -CertStoreLocation Cert:\LocalMachine\TrustedPeople
-Import-Certificate -FilePath "build\out\NewPilotDevCert.cer" -CertStoreLocation Cert:\LocalMachine\Root
-Add-AppxPackage -Path "build\out\NewPilot.msix"
+irm https://raw.githubusercontent.com/GamerJagdish/newpilot/main/install.ps1 | iex
 ```
+
+*(The 1-line installer automatically trusts the security certificate, cleans up old installations, installs the MSIX package, and opens the NewPilot Settings GUI).*
 
 ### Enabling NewPilot in Windows 11
 1. Open **Windows 11 Settings**.
