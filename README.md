@@ -1,7 +1,7 @@
 # NewPilot 🚀
 
 > **Ultra-Lightweight & Instant Copilot Key Remapper for Windows 11**  
-> Native C++ (Win32) alternative to heavy .NET/Electron key remappers — **85 KB binary**, **< 5ms response time**, **< 2 MB RAM usage**.
+> Native C++ (Win32) alternative to heavy .NET/Electron key remappers — **~140 KB installed size**, **< 5ms response time**, **< 2 MB RAM usage**.
 
 ---
 
@@ -15,10 +15,10 @@ Other solutions rely on heavy runtimes (.NET 10, Electron, WPF, WinForms), intro
 
 | Metric | Heavy .NET / Electron Alternatives | **NewPilot (Native C++)** | Improvement |
 | :--- | :--- | :--- | :--- |
-| **Executable Size** | ~15 MB – 60 MB+ | **85 KB** | **> 99.5% Smaller** |
-| **MSIX Package Size** | ~15 MB – 50 MB | **49 KB** | **> 99.7% Smaller** |
+| **Installed App Size** | ~15 MB – 60 MB+ | **~140 KB** | **> 99% Smaller** |
+| **MSIX Package Size** | ~15 MB – 50 MB | **~54 - 60 KB** | **> 99.5% Smaller** |
 | **Keypress Latency** | ~100ms – 300ms (.NET CLR init) | **< 5ms** (Instantaneous) | **~30x Faster** |
-| **Tray Memory Usage** | 30 MB – 80 MB RAM | **< 2 MB RAM** | **> 95% RAM Reduction** |
+| **Tray Memory Usage** | 30 MB – 80 MB RAM | **< 2 MB RAM** | **> 93% RAM Reduction** |
 | **Dependencies** | .NET 10 SDK / Runtime | **Zero Runtimes** (Pure Win32 C++) | Native Windows OS API |
 
 ---
