@@ -44,4 +44,5 @@ Make-Logo "Square71x71Logo.png" 71 71
 Make-Logo "Square310x310Logo.png" 310 310
 Make-Logo "Wide310x150Logo.png" 310 150
 Make-Logo "StoreLogo.png" 50 50
+Make-Logo "StoreLogo300.png" 300 300
 Write-Host "NP logo assets centered and scaled successfully."
