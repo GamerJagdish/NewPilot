@@ -1,6 +1,9 @@
 [CmdletBinding()]
 param(
-    [string]$Configuration = "Release"
+    [string]$Configuration = "Release",
+    [string]$StoreIdentityName = "GamerJagdish.NewPilot",
+    [string]$StorePublisher = "CN=CAC481E5-AF67-48DF-8DF8-A641563FA629",
+    [string]$StorePublisherDisplayName = "GamerJagdish"
 )
 
 $ErrorActionPreference = "Stop"
@@ -31,7 +34,6 @@ New-Item -ItemType Directory -Force -Path $stagingDir | Out-Null
 New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
 Copy-Item $exePath -Destination (Join-Path $stagingDir "NewPilot.exe")
-Copy-Item (Join-Path $rootDir "packaging\AppxManifest.xml") -Destination (Join-Path $stagingDir "AppxManifest.xml")
 Copy-Item (Join-Path $rootDir "packaging\resources\Images") -Destination (Join-Path $stagingDir "Images") -Recurse
 
 # Find SDK tools dynamically
@@ -50,22 +52,38 @@ if (-not (Test-Path $makepri)) {
     $makepri = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "makepri.exe" -Recurse | Where-Object { $_.FullName -like "*x64*" } | Select-Object -First 1).FullName
 }
 
-Write-Host "`n=== Indexing Resources with makepri ===" -ForegroundColor Cyan
+# -------------------------------------------------------------
+# 1. BUILD MICROSOFT STORE PACKAGE (Unsigned for Partner Center)
+# -------------------------------------------------------------
+Write-Host "`n=== Packaging Microsoft Store Package (Unsigned for Partner Center) ===" -ForegroundColor Cyan
+$rawManifest = Get-Content (Join-Path $rootDir "packaging\AppxManifest.xml") -Raw
+
+# Stamp Store Identity Credentials
+$storeManifest = $rawManifest -replace 'Name="NewPilot"', "Name=`"$StoreIdentityName`""
+$storeManifest = $storeManifest -replace 'Publisher="CN=GamerJagdish"', "Publisher=`"$StorePublisher`""
+$storeManifest = $storeManifest -replace '<PublisherDisplayName>GamerJagdish</PublisherDisplayName>', "<PublisherDisplayName>$StorePublisherDisplayName</PublisherDisplayName>"
+
+Set-Content -Path (Join-Path $stagingDir "AppxManifest.xml") -Value $storeManifest -Encoding UTF8
+
 $priConfig = Join-Path $stagingDir "priconfig.xml"
 $priOut = Join-Path $stagingDir "resources.pri"
 & $makepri createconfig /cf $priConfig /dq en-US /pv 10.0.0 /o | Out-Null
 & $makepri new /pr $stagingDir /cf $priConfig /of $priOut /o | Out-Null
 
-Write-Host "`n=== Packaging Store MSIX Package (Unsigned for Partner Center) ===" -ForegroundColor Cyan
 $storeMsixPath = Join-Path $outDir "NewPilot.Store.msix"
 & $makeappx pack /d $stagingDir /p $storeMsixPath /o
 $storeMsixSizeKB = [math]::Round(((Get-Item $storeMsixPath).Length / 1KB), 2)
 Write-Host "Created Store Package: $storeMsixPath ($storeMsixSizeKB KB)" -ForegroundColor Green
 
+# -------------------------------------------------------------
+# 2. BUILD LOCAL SIDELOAD PACKAGE (Signed for local testing)
+# -------------------------------------------------------------
 Write-Host "`n=== Packaging Local Sideload MSIX Package ===" -ForegroundColor Cyan
-$msixPath = Join-Path $outDir "NewPilot.msix"
-Copy-Item $storeMsixPath -Destination $msixPath
+Set-Content -Path (Join-Path $stagingDir "AppxManifest.xml") -Value $rawManifest -Encoding UTF8
+& $makepri new /pr $stagingDir /cf $priConfig /of $priOut /o | Out-Null
 
+$msixPath = Join-Path $outDir "NewPilot.msix"
+& $makeappx pack /d $stagingDir /p $msixPath /o
 $msixSizeKB = [math]::Round(((Get-Item $msixPath).Length / 1KB), 2)
 
 Write-Host "`n=== Managing Developer Certificate (GamerJagdish) ===" -ForegroundColor Cyan
@@ -93,6 +111,5 @@ Write-Host "`n=======================================================" -Foregrou
 Write-Host "SUCCESS! Packages built and ready!" -ForegroundColor Green
 Write-Host "Store Package (Upload to Partner Center): $storeMsixPath ($storeMsixSizeKB KB)" -ForegroundColor Green
 Write-Host "Sideload Package (Local testing): $msixPath ($msixSizeKB KB)" -ForegroundColor Green
-Write-Host "Developer Certificate: $cerPath" -ForegroundColor Green
 Write-Host "Executable Size: $exePath ($exeSizeKB KB)" -ForegroundColor Green
 Write-Host "=======================================================" -ForegroundColor Green

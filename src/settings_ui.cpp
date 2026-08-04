@@ -32,6 +32,7 @@
 #define IDC_BTN_TEST          2013
 #define IDC_BTN_SAVE          2014
 #define IDC_BTN_CANCEL        2015
+#define IDC_BTN_ABOUT         2016
 
 static AppConfig g_config;
 static std::vector<AppInfo> g_installed_apps;
@@ -230,8 +231,11 @@ static LRESULT CALLBACK SettingsWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
             SendMessageW(hChkStart, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
             // Action Buttons
-            HWND hBtnTest = CreateWindowW(L"BUTTON", L"Test Action", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 20, 298, 110, 30, hWnd, (HMENU)IDC_BTN_TEST, NULL, NULL);
+            HWND hBtnTest = CreateWindowW(L"BUTTON", L"Test Action", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 20, 298, 90, 30, hWnd, (HMENU)IDC_BTN_TEST, NULL, NULL);
             SendMessageW(hBtnTest, WM_SETFONT, (WPARAM)g_hFont, TRUE);
+
+            HWND hBtnAbout = CreateWindowW(L"BUTTON", L"About", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 118, 298, 80, 30, hWnd, (HMENU)IDC_BTN_ABOUT, NULL, NULL);
+            SendMessageW(hBtnAbout, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
             HWND hBtnSave = CreateWindowW(L"BUTTON", L"Save and Close", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 230, 298, 120, 30, hWnd, (HMENU)IDC_BTN_SAVE, NULL, NULL);
             SendMessageW(hBtnSave, WM_SETFONT, (WPARAM)g_hFont, TRUE);
@@ -269,6 +273,8 @@ static LRESULT CALLBACK SettingsWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
             } else if (id == IDC_BTN_TEST) {
                 KeyAction test_act = build_action_from_ui(hWnd);
                 ActionRunner::run(test_act);
+            } else if (id == IDC_BTN_ABOUT) {
+                ShellExecuteW(NULL, L"open", L"https://github.com/GamerJagdish/newpilot", NULL, NULL, SW_SHOWNORMAL);
             } else if (id == IDC_BTN_SAVE) {
                 g_config.tap_action = build_action_from_ui(hWnd);
                 g_config.show_tray_icon = (SendMessageW(GetDlgItem(hWnd, IDC_CHK_SHOW_TRAY), BM_GETCHECK, 0, 0) == BST_CHECKED);

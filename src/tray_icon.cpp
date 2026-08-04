@@ -12,6 +12,7 @@
 #define IDM_SETTINGS 1001
 #define IDM_RUN_ACTION 1002
 #define IDM_EXIT 1003
+#define IDM_ABOUT 1004
 
 static HWND g_hTrayWnd = NULL;
 static NOTIFYICONDATAW g_nid = {};
@@ -120,6 +121,7 @@ static LRESULT CALLBACK TrayWndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
                 HMENU hMenu = CreatePopupMenu();
                 AppendMenuW(hMenu, MF_STRING, IDM_SETTINGS, L"Settings...");
                 AppendMenuW(hMenu, MF_STRING, IDM_RUN_ACTION, L"Run Action");
+                AppendMenuW(hMenu, MF_STRING, IDM_ABOUT, L"About / GitHub");
                 AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
                 AppendMenuW(hMenu, MF_STRING, IDM_EXIT, L"Exit");
 
@@ -132,6 +134,8 @@ static LRESULT CALLBACK TrayWndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
                 } else if (cmd == IDM_RUN_ACTION) {
                     AppConfig config = AppConfig::load();
                     ActionRunner::run(config.tap_action);
+                } else if (cmd == IDM_ABOUT) {
+                    ShellExecuteW(NULL, L"open", L"https://github.com/GamerJagdish/newpilot", NULL, NULL, SW_SHOWNORMAL);
                 } else if (cmd == IDM_EXIT) {
                     DestroyWindow(hWnd);
                 }
