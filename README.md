@@ -52,7 +52,7 @@ Other solutions rely on heavy runtimes (.NET 10, Electron, WPF, WinForms), intro
 Open **PowerShell as Administrator** and paste this 1-line command:
 
 ```powershell
-irm https://raw.githubusercontent.com/GamerJagdish/newpilot/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/GamerJagdish/NewPilot/main/install.ps1 | iex
 ```
 
 *(The 1-line installer automatically trusts the security certificate, cleans up old installations, installs the MSIX package, and opens the NewPilot Settings GUI).*

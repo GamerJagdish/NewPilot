@@ -54,8 +54,8 @@ if (-not $msixPath -or -not (Test-Path $msixPath)) {
     $tempDir = Join-Path $env:TEMP "NewPilotInstall"
     if (-not (Test-Path $tempDir)) { New-Item -ItemType Directory -Force -Path $tempDir | Out-Null }
     
-    $msixUrl = "https://raw.githubusercontent.com/GamerJagdish/newpilot/main/build/out/NewPilot.msix"
-    $cerUrl = "https://raw.githubusercontent.com/GamerJagdish/newpilot/main/build/out/NewPilotDevCert.cer"
+    $msixUrl = "https://raw.githubusercontent.com/GamerJagdish/NewPilot/main/build/out/NewPilot.msix"
+    $cerUrl = "https://raw.githubusercontent.com/GamerJagdish/NewPilot/main/build/out/NewPilotDevCert.cer"
 
     $msixPath = Join-Path $tempDir "NewPilot.msix"
     $cerPath = Join-Path $tempDir "NewPilotDevCert.cer"
