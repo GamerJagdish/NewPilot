@@ -60,6 +60,7 @@ if (-not $msixPath -or -not (Test-Path $msixPath)) {
     $msixPath = Join-Path $tempDir "NewPilot.msix"
     $cerPath = Join-Path $tempDir "NewPilotDevCert.cer"
 
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
     Invoke-WebRequest -Uri $msixUrl -OutFile $msixPath -UseBasicParsing
     Invoke-WebRequest -Uri $cerUrl -OutFile $cerPath -UseBasicParsing
 }

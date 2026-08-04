@@ -1,5 +1,7 @@
-# Build directory
-build/
+# Build intermediate files
+build/*
+!build/out/
+build/out/*
 !build/out/NewPilot.msix
 !build/out/NewPilotDevCert.cer
 
