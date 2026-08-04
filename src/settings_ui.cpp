@@ -222,30 +222,30 @@ static LRESULT CALLBACK SettingsWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
             SendMessageW(hPresetCombo, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
             // Button to open Windows 11 Keyboard Settings directly
-            HWND hBtnOpenWinSettings = CreateWindowW(L"BUTTON", L"Open Windows Keyboard Settings", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 20, 140, 440, 32, hWnd, (HMENU)IDC_BTN_OPEN_WIN_SETTINGS, NULL, NULL);
+            HWND hBtnOpenWinSettings = CreateWindowW(L"BUTTON", L"Open Windows Keyboard Settings", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 20, 180, 440, 30, hWnd, (HMENU)IDC_BTN_OPEN_WIN_SETTINGS, NULL, NULL);
             SendMessageW(hBtnOpenWinSettings, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
             // Group Box for System Tray & Startup Options
-            HWND hGroupTray = CreateWindowW(L"BUTTON", L"Tray and Startup Options", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 20, 186, 440, 92, hWnd, NULL, NULL, NULL);
+            HWND hGroupTray = CreateWindowW(L"BUTTON", L"Tray and Startup Options", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 20, 220, 440, 85, hWnd, NULL, NULL, NULL);
             SendMessageW(hGroupTray, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            HWND hChkTray = CreateWindowW(L"BUTTON", L"Show notification area (tray) icon", WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 35, 210, 400, 20, hWnd, (HMENU)IDC_CHK_SHOW_TRAY, NULL, NULL);
+            HWND hChkTray = CreateWindowW(L"BUTTON", L"Show notification area (tray) icon", WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 35, 242, 400, 20, hWnd, (HMENU)IDC_CHK_SHOW_TRAY, NULL, NULL);
             SendMessageW(hChkTray, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            HWND hChkStart = CreateWindowW(L"BUTTON", L"Start tray icon automatically when I sign in", WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 35, 240, 400, 20, hWnd, (HMENU)IDC_CHK_AUTO_START, NULL, NULL);
+            HWND hChkStart = CreateWindowW(L"BUTTON", L"Start tray icon automatically when I sign in", WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 35, 268, 400, 20, hWnd, (HMENU)IDC_CHK_AUTO_START, NULL, NULL);
             SendMessageW(hChkStart, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
             // Action Buttons
-            HWND hBtnTest = CreateWindowW(L"BUTTON", L"Test Action", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 20, 298, 90, 30, hWnd, (HMENU)IDC_BTN_TEST, NULL, NULL);
+            HWND hBtnTest = CreateWindowW(L"BUTTON", L"Test Action", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 20, 318, 90, 30, hWnd, (HMENU)IDC_BTN_TEST, NULL, NULL);
             SendMessageW(hBtnTest, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            HWND hBtnAbout = CreateWindowW(L"BUTTON", L"About", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 118, 298, 80, 30, hWnd, (HMENU)IDC_BTN_ABOUT, NULL, NULL);
+            HWND hBtnAbout = CreateWindowW(L"BUTTON", L"About", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 118, 318, 80, 30, hWnd, (HMENU)IDC_BTN_ABOUT, NULL, NULL);
             SendMessageW(hBtnAbout, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            HWND hBtnSave = CreateWindowW(L"BUTTON", L"Save and Close", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 230, 298, 120, 30, hWnd, (HMENU)IDC_BTN_SAVE, NULL, NULL);
+            HWND hBtnSave = CreateWindowW(L"BUTTON", L"Save and Close", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 230, 318, 120, 30, hWnd, (HMENU)IDC_BTN_SAVE, NULL, NULL);
             SendMessageW(hBtnSave, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            HWND hBtnCancel = CreateWindowW(L"BUTTON", L"Cancel", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 360, 298, 100, 30, hWnd, (HMENU)IDC_BTN_CANCEL, NULL, NULL);
+            HWND hBtnCancel = CreateWindowW(L"BUTTON", L"Cancel", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 360, 318, 100, 30, hWnd, (HMENU)IDC_BTN_CANCEL, NULL, NULL);
             SendMessageW(hBtnCancel, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
             populate_dialog_data(hWnd);
@@ -327,7 +327,7 @@ void SettingsUI::show(HINSTANCE hInstance) {
     RegisterClassExW(&wcex);
 
     int width = 495;
-    int height = 380;
+    int height = 400;
     int screen_w = GetSystemMetrics(SM_CXSCREEN);
     int screen_h = GetSystemMetrics(SM_CYSCREEN);
     int x = (screen_w - width) / 2;
