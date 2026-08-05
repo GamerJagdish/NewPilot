@@ -32,6 +32,12 @@ std::wstring AppConfig::get_config_path() {
     return dir + L"\\config.json";
 }
 
+bool AppConfig::has_config_file() {
+    std::wstring path = get_config_path();
+    DWORD dwAttrib = GetFileAttributesW(path.c_str());
+    return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+}
+
 // Simple JSON helper functions
 static std::wstring escape_json(const std::wstring& s) {
     std::wstring out;

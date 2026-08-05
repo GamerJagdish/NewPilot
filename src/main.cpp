@@ -94,6 +94,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
         case ExecutionMode::KeyPress:
         default: {
+            if (!AppConfig::has_config_file()) {
+                SettingsUI::show(hInstance);
+                return 0;
+            }
             AppConfig config = AppConfig::load();
             if (!config.tap_action.is_configured()) {
                 SettingsUI::show(hInstance);

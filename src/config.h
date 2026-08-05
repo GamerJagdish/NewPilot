@@ -43,6 +43,7 @@ struct AppConfig {
 
     static std::wstring get_config_dir();
     static std::wstring get_config_path();
+    static bool has_config_file();
     static AppConfig load();
     bool save() const;
 };
