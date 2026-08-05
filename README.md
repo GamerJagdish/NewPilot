@@ -3,6 +3,35 @@
 > **Ultra-Lightweight & Instant Copilot Key Remapper for Windows 11**  
 > Native C++ (Win32) alternative to heavy .NET/Electron key remappers — **~140 KB installed size**, **< 5ms response time**, **< 2 MB RAM usage**.
 
+<a href="https://apps.microsoft.com/detail/9NGW4QTD1SWF?referrer=appbadge&mode=full" target="_blank" rel="noopener noreferrer">
+	<img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200"/>
+</a>
+
+---
+
+## 🛍️ Download & Installation
+
+### Option 1: Official Microsoft Store (Recommended)
+
+| Open in Microsoft Store | Direct .exe Installer Download |
+| :---: | :---: |
+| <a href="https://apps.microsoft.com/detail/9NGW4QTD1SWF?referrer=appbadge&mode=full" target="_blank" rel="noopener noreferrer"><img src="https://get.microsoft.com/images/en-us%20dark.svg" width="160" alt="Open in Store"/></a> | <a href="https://get.microsoft.com/installer/download/9NGW4QTD1SWF?referrer=appbadge" target="_self"><img src="https://img.shields.io/badge/Download-.exe-0078D4?style=for-the-badge&logo=windows" width="160" alt="Direct .exe Download"/></a> |
+
+### Option 2: 1-Click PowerShell Web Installer
+Open **PowerShell as Administrator** and paste this 1-line command:
+
+```powershell
+irm https://raw.githubusercontent.com/GamerJagdish/NewPilot/main/install.ps1 | iex
+```
+
+*(The 1-line installer automatically trusts the security certificate, cleans up old installations, installs the MSIX package, and opens the NewPilot Settings GUI).*
+
+### Enabling NewPilot in Windows 11
+1. Open **Windows 11 Settings**.
+2. Go to **Bluetooth & devices** → **Keyboard**.
+3. Under **Shortcuts and hotkeys**, locate **Customize Copilot key on keyboard**.
+4. Select **Custom** → choose **NewPilot**.
+
 ---
 
 ## ⚡ Why NewPilot?
@@ -37,31 +66,6 @@ Other solutions rely on heavy runtimes (.NET 10, Electron, WPF, WinForms), intro
   - Lock PC (`Win + L`)
 - **Modern Native GUI**: Built with Windows 11 Visual Styles (Common Controls v6) and anti-aliased Segoe UI typography.
 - **Optional System Tray Icon**: Minimal background daemon with sign-in auto-start shortcut support.
-
----
-
-## 🛠️ Building & Installing
-
-### Requirements
-- **Windows 11** (Build 22621+)
-- **Visual Studio 2022** (MSVC compiler & C++ workload) or CMake
-- **Windows 10/11 SDK** (`makeappx.exe`, `signtool.exe`, `makepri.exe`)
-
-### ⚡ Quick 1-Click Installer (PowerShell)
-
-Open **PowerShell as Administrator** and paste this 1-line command:
-
-```powershell
-irm https://raw.githubusercontent.com/GamerJagdish/NewPilot/main/install.ps1 | iex
-```
-
-*(The 1-line installer automatically trusts the security certificate, cleans up old installations, installs the MSIX package, and opens the NewPilot Settings GUI).*
-
-### Enabling NewPilot in Windows 11
-1. Open **Windows 11 Settings**.
-2. Go to **Bluetooth & devices** → **Keyboard**.
-3. Under **Shortcuts and hotkeys**, locate **Customize Copilot key on keyboard**.
-4. Select **Custom** → choose **NewPilot**.
 
 
 ---
