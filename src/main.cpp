@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <appmodel.h>
 #include <string>
+#include <vector>
 #include <algorithm>
 
 #include "config.h"
@@ -18,11 +19,10 @@ static std::wstring get_aumid() {
     UINT32 length = 0;
     LONG rc = GetApplicationUserModelId(GetCurrentProcess(), &length, NULL);
     if (rc == ERROR_INSUFFICIENT_BUFFER && length > 0) {
-        std::wstring aumid(length, L'\0');
-        rc = GetApplicationUserModelId(GetCurrentProcess(), &length, &aumid[0]);
+        std::vector<wchar_t> buf(length, L'\0');
+        rc = GetApplicationUserModelId(GetCurrentProcess(), &length, buf.data());
         if (rc == ERROR_SUCCESS) {
-            if (!aumid.empty() && aumid.back() == L'\0') aumid.pop_back();
-            return aumid;
+            return std::wstring(buf.data());
         }
     }
     return L"";
@@ -37,9 +37,13 @@ static bool match_arg(int argc, wchar_t* argv[], const wchar_t* opt1, const wcha
     return false;
 }
 
-static bool is_protocol_activation(int argc, wchar_t* argv[]) {
+static bool is_protocol_activation(int argc, wchar_t* argv[], bool& out_should_ignore) {
+    out_should_ignore = false;
     for (int i = 1; i < argc; ++i) {
         if (wcsstr(argv[i], L"newpilot-key:") != NULL) {
+            if (wcsstr(argv[i], L"state=Up") != NULL) {
+                out_should_ignore = true;
+            }
             return true;
         }
     }
@@ -50,6 +54,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     int argc = 0;
     wchar_t** argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 
+    bool should_ignore = false;
     ExecutionMode mode = ExecutionMode::KeyPress;
 
     if (match_arg(argc, argv, L"--settings", L"/settings")) {
@@ -58,7 +63,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         mode = ExecutionMode::Tray;
     } else if (match_arg(argc, argv, L"--key", L"/key")) {
         mode = ExecutionMode::KeyPress;
-    } else if (is_protocol_activation(argc, argv)) {
+    } else if (is_protocol_activation(argc, argv, should_ignore)) {
+        if (should_ignore) {
+            if (argv) LocalFree(argv);
+            return 0; // Ignore pressAndHoldStop (state=Up) so hold acts only once
+        }
         mode = ExecutionMode::KeyPress;
     } else {
         std::wstring aumid = get_aumid();
