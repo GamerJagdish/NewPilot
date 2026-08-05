@@ -59,7 +59,7 @@ Write-Host "`n=== Packaging Microsoft Store Package (Unsigned for Partner Center
 $rawManifest = Get-Content (Join-Path $rootDir "packaging\AppxManifest.xml") -Raw
 
 # Stamp Store Identity Credentials
-$storeManifest = $rawManifest -replace 'Name="NewPilot"', "Name=`"$StoreIdentityName`""
+$storeManifest = $rawManifest -replace '<Identity\s+Name="NewPilot"', "<Identity Name=`"$StoreIdentityName`""
 $storeManifest = $storeManifest -replace 'Publisher="CN=GamerJagdish"', "Publisher=`"$StorePublisher`""
 $storeManifest = $storeManifest -replace '<PublisherDisplayName>GamerJagdish</PublisherDisplayName>', "<PublisherDisplayName>$StorePublisherDisplayName</PublisherDisplayName>"
 

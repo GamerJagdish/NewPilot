@@ -37,6 +37,15 @@ static bool match_arg(int argc, wchar_t* argv[], const wchar_t* opt1, const wcha
     return false;
 }
 
+static bool is_protocol_activation(int argc, wchar_t* argv[]) {
+    for (int i = 1; i < argc; ++i) {
+        if (wcsstr(argv[i], L"newpilot-key:") != NULL) {
+            return true;
+        }
+    }
+    return false;
+}
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
     int argc = 0;
     wchar_t** argv = CommandLineToArgvW(GetCommandLineW(), &argc);
@@ -49,6 +58,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         mode = ExecutionMode::Tray;
     } else if (match_arg(argc, argv, L"--key", L"/key")) {
         mode = ExecutionMode::KeyPress;
+    } else if (is_protocol_activation(argc, argv)) {
+        mode = ExecutionMode::KeyPress;
     } else {
         std::wstring aumid = get_aumid();
         if (!aumid.empty()) {
@@ -56,6 +67,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
                 mode = ExecutionMode::Settings;
             } else if (aumid.length() >= 5 && _wcsicmp(aumid.substr(aumid.length() - 5).c_str(), L"!Tray") == 0) {
                 mode = ExecutionMode::Tray;
+            } else if (aumid.length() >= 9 && _wcsicmp(aumid.substr(aumid.length() - 9).c_str(), L"!NewPilot") == 0) {
+                mode = ExecutionMode::KeyPress;
             }
         }
     }

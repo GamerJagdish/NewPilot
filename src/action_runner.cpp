@@ -18,6 +18,8 @@ static std::wstring expand_env(const std::wstring& input) {
 }
 
 void ActionRunner::release_stuck_modifiers() {
+    Sleep(50); // Allow physical hardware Copilot key (Win+Shift+F23) to settle
+
     INPUT inputs[8] = {};
     int count = 0;
 
@@ -33,7 +35,7 @@ void ActionRunner::release_stuck_modifiers() {
 
     if (count > 0) {
         SendInput(count, inputs, sizeof(INPUT));
-        Sleep(10);
+        Sleep(20);
     }
 }
 
