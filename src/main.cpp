@@ -67,7 +67,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
                 mode = ExecutionMode::Settings;
             } else if (aumid.length() >= 5 && _wcsicmp(aumid.substr(aumid.length() - 5).c_str(), L"!Tray") == 0) {
                 mode = ExecutionMode::Tray;
-            } else if (aumid.length() >= 9 && _wcsicmp(aumid.substr(aumid.length() - 9).c_str(), L"!NewPilot") == 0) {
+            } else {
                 mode = ExecutionMode::KeyPress;
             }
         }
