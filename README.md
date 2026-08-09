@@ -24,7 +24,7 @@
 | :---: | :---: |
 | <a href="https://apps.microsoft.com/detail/9NGW4QTD1SWF?referrer=appbadge&mode=full" target="_blank" rel="noopener noreferrer"><img src="https://get.microsoft.com/images/en-us%20dark.svg" width="160" alt="Open in Store"/></a> | <a href="https://get.microsoft.com/installer/download/9NGW4QTD1SWF?referrer=appbadge" target="_self"><img src="https://img.shields.io/badge/Download-.exe-0078D4?style=for-the-badge&logo=windows" width="160" alt="Direct .exe Download"/></a> |
 
-### Option 2: 1-Click PowerShell Web Installer
+### Option 2: One-Click PowerShell Web Installer
 Open **PowerShell as Administrator** and execute:
 
 ```powershell
