@@ -8,6 +8,13 @@
 </a>
 
 ---
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/newpilot-screenshot-1.png" alt="NewPilot app selection screenshot" width="250" />
+  <img src="screenshots/newpilot-screenshot-2.png" alt="NewPilot preset selection screenshot" width="250" />
+  <img src="screenshots/newpilot-screenshot-3.png" alt="NewPilot custom menu screenshot" width="250" />
+</p>
 
 ## Download & Installation
 
