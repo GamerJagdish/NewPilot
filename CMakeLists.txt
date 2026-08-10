@@ -4,6 +4,8 @@ project(NewPilot LANGUAGES CXX RC)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 add_executable(NewPilot WIN32
     src/main.cpp
     src/config.h
@@ -21,6 +23,7 @@ add_executable(NewPilot WIN32
 )
 
 if (MSVC)
+    set_property(TARGET NewPilot PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     target_compile_options(NewPilot PRIVATE /O2 /GL /Gw /Gy)
     target_link_options(NewPilot PRIVATE /LTCG /OPT:REF /OPT:ICF /SUBSYSTEM:WINDOWS)
 endif()
