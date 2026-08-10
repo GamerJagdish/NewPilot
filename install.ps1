@@ -8,6 +8,30 @@ Write-Host "            NewPilot All-in-One Installer              " -Foreground
 Write-Host "=======================================================" -ForegroundColor Cyan
 
 # -------------------------------------------------------------
+# Helper: Extract Package Version from MSIX Archive
+# -------------------------------------------------------------
+function Get-PackageVersionFromMsix {
+    param([string]$path)
+    try {
+        Add-Type -AssemblyName "System.IO.Compression.FileSystem" -ErrorAction SilentlyContinue
+        $zip = [System.IO.Compression.ZipFile]::OpenRead((Convert-Path $path))
+        $entry = $zip.Entries | Where-Object { $_.FullName -eq "AppxManifest.xml" }
+        if ($entry) {
+            $stream = $entry.Open()
+            $reader = New-Object System.IO.StreamReader($stream)
+            $content = $reader.ReadToEnd()
+            $reader.Close()
+            $stream.Close()
+            $zip.Dispose()
+            $xml = [xml]$content
+            return $xml.Package.Identity.Version
+        }
+        if ($zip) { $zip.Dispose() }
+    } catch {}
+    return "Unknown"
+}
+
+# -------------------------------------------------------------
 # 1. Check Administrator Privileges
 # -------------------------------------------------------------
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -69,6 +93,8 @@ if (-not (Test-Path $msixPath)) {
     throw "Error: Could not locate or download NewPilot.msix package file."
 }
 
+$targetVersion = Get-PackageVersionFromMsix -path $msixPath
+
 # -------------------------------------------------------------
 # 3. Trust Developer Certificate
 # -------------------------------------------------------------
@@ -88,22 +114,29 @@ if ($cerPath -and (Test-Path $cerPath)) {
 }
 
 # -------------------------------------------------------------
-# 4. Stop Running Instances & Remove Old Package
+# 4. Stop Running Instances & Detect / Remove Old Package
 # -------------------------------------------------------------
-Write-Host "`n[2/3] Cleaning previous installation..." -ForegroundColor Cyan
+Write-Host "`n[2/3] Checking previous installation..." -ForegroundColor Cyan
 Stop-Process -Name NewPilot -Force -ErrorAction SilentlyContinue
-Get-AppxPackage -Name "NewPilot" | Remove-AppxPackage -ErrorAction SilentlyContinue
-Write-Host "Cleanup completed." -ForegroundColor Green
+
+$existingPkg = Get-AppxPackage -Name "NewPilot"
+if ($existingPkg) {
+    Write-Host "Found installed package: v$($existingPkg.Version)" -ForegroundColor Yellow
+    $existingPkg | Remove-AppxPackage -ErrorAction SilentlyContinue
+    Write-Host "Previous package (v$($existingPkg.Version)) uninstalled." -ForegroundColor Green
+} else {
+    Write-Host "No previous installation detected." -ForegroundColor Green
+}
 
 # -------------------------------------------------------------
 # 5. Install NewPilot MSIX Package
 # -------------------------------------------------------------
-Write-Host "`n[3/3] Installing NewPilot..." -ForegroundColor Cyan
+Write-Host "`n[3/3] Installing NewPilot v$targetVersion..." -ForegroundColor Cyan
 Add-AppxPackage -Path $msixPath -ForceApplicationShutdown
-Write-Host "NewPilot package installed successfully!" -ForegroundColor Green
+Write-Host "NewPilot v$targetVersion installed successfully!" -ForegroundColor Green
 
 Write-Host "`n=======================================================" -ForegroundColor Green
-Write-Host "       SUCCESS! NewPilot is installed and ready!        " -ForegroundColor Green
+Write-Host "   SUCCESS! NewPilot v$targetVersion is installed!      " -ForegroundColor Green
 Write-Host "=======================================================" -ForegroundColor Green
 
 $pkg = Get-AppxPackage -Name "NewPilot"
