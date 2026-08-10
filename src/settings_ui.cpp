@@ -5,9 +5,38 @@
 #include "resource.h"
 #include <commctrl.h>
 #include <shlwapi.h>
+#include <dwmapi.h>
 #include <vector>
 
 #pragma comment(lib, "comctl32.lib")
+#pragma comment(lib, "dwmapi.lib")
+
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#endif
+
+static bool is_dark_mode_enabled() {
+    DWORD data = 1;
+    DWORD dataSize = sizeof(data);
+    LONG res = RegGetValueW(
+        HKEY_CURRENT_USER,
+        L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+        L"AppsUseLightTheme",
+        RRF_RT_REG_DWORD,
+        NULL,
+        &data,
+        &dataSize
+    );
+    if (res == ERROR_SUCCESS) {
+        return data == 0;
+    }
+    return false;
+}
+
+static void apply_dark_mode(HWND hWnd) {
+    BOOL isDark = is_dark_mode_enabled() ? TRUE : FALSE;
+    DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &isDark, sizeof(isDark));
+}
 
 // Enable modern Windows Visual Styles (Common Controls v6)
 #pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
@@ -175,6 +204,7 @@ static KeyAction build_action_from_ui(HWND hWnd) {
 static LRESULT CALLBACK SettingsWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_CREATE: {
+            apply_dark_mode(hWnd);
             INITCOMMONCONTROLSEX icex = { sizeof(icex), ICC_STANDARD_CLASSES | ICC_LINK_CLASS };
             InitCommonControlsEx(&icex);
 
@@ -299,6 +329,13 @@ static LRESULT CALLBACK SettingsWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
                 DestroyWindow(hWnd);
             } else if (id == IDC_BTN_CANCEL) {
                 DestroyWindow(hWnd);
+            }
+            break;
+        }
+
+        case WM_SETTINGCHANGE: {
+            if (lParam && lstrcmpiW((LPCWSTR)lParam, L"ImmersiveColorSet") == 0) {
+                apply_dark_mode(hWnd);
             }
             break;
         }

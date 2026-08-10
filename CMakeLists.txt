@@ -35,4 +35,5 @@ target_link_libraries(NewPilot PRIVATE
     shell32
     user32
     advapi32
+    dwmapi
 )
