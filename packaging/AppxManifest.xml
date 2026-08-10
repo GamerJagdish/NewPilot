@@ -9,7 +9,7 @@
   <Identity
     Name="NewPilot"
     Publisher="CN=GamerJagdish"
-    Version="1.1.0.1"
+    Version="1.1.1.0"
     ProcessorArchitecture="x64" />
 
   <Properties>
