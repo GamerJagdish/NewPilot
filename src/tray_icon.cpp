@@ -51,6 +51,18 @@ bool TrayApplication::is_startup_enabled() {
     return false;
 }
 
+static void clear_startup_approved_override() {
+    HKEY hKey;
+    if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolder", 0, KEY_SET_VALUE, &hKey) == ERROR_SUCCESS) {
+        RegDeleteValueW(hKey, L"NewPilot.lnk");
+        RegCloseKey(hKey);
+    }
+    if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run", 0, KEY_SET_VALUE, &hKey) == ERROR_SUCCESS) {
+        RegDeleteValueW(hKey, L"NewPilot");
+        RegCloseKey(hKey);
+    }
+}
+
 void TrayApplication::update_startup_shortcut(bool enable) {
     wchar_t startup_dir[MAX_PATH];
     if (FAILED(SHGetFolderPathW(NULL, CSIDL_STARTUP, NULL, 0, startup_dir))) return;
@@ -61,6 +73,8 @@ void TrayApplication::update_startup_shortcut(bool enable) {
         DeleteFileW(link_path.c_str());
         return;
     }
+
+    clear_startup_approved_override();
 
     HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
     IShellLinkW* psl = NULL;
