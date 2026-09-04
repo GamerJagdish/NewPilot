@@ -20,3 +20,5 @@ obj/
 scratch/
 *.tmp
 *.log
+*.pfx
+*.p12

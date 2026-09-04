@@ -1,0 +1,6 @@
+﻿#include <windows.h>
+#include "resource.h"
+
+IDI_APP_ICON       ICON     "../../packaging/resources/app.ico"
+IDR_MSIX_PACKAGE   RCDATA   "../../build/out/NewPilot.msix"
+IDR_DEV_CERT       RCDATA   "../../build/out/NewPilotDevCert.cer"

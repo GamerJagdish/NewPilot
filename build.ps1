@@ -91,6 +91,20 @@ $certSubject = "CN=GamerJagdish"
 $cert = Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -eq $certSubject } | Select-Object -First 1
 
 if (-not $cert) {
+    $localPfx = Join-Path $rootDir "packaging\NewPilotDevCert.pfx"
+    if (Test-Path $localPfx) {
+        Write-Host "Found local PFX certificate: $localPfx" -ForegroundColor Cyan
+        $pfxPwd = if ($env:DEV_CERT_PASSWORD) { ConvertTo-SecureString $env:DEV_CERT_PASSWORD -AsPlainText -Force } else { ConvertTo-SecureString "" -AsPlainText -Force }
+        try {
+            $imported = Import-PfxCertificate -FilePath $localPfx -CertStoreLocation Cert:\CurrentUser\My -Password $pfxPwd -Exportable
+            $cert = $imported | Select-Object -First 1
+        } catch {
+            Write-Warning "Failed to import local PFX: $_"
+        }
+    }
+}
+
+if (-not $cert) {
     Write-Host "Creating developer self-signed certificate '$certSubject'..." -ForegroundColor Yellow
     $cert = New-SelfSignedCertificate -Type Custom -Subject $certSubject -KeyUsage DigitalSignature -FriendlyName "GamerJagdish Development Certificate" -CertStoreLocation Cert:\CurrentUser\My -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
 }
@@ -107,9 +121,32 @@ Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\CurrentUser\Trust
 Write-Host "`n=== Signing Local Sideload Package ===" -ForegroundColor Cyan
 & $signtool sign /fd SHA256 /sha1 $cert.Thumbprint $msixPath
 
+# -------------------------------------------------------------
+# 3. BUILD STANDALONE SETUP EXECUTABLE (NewPilot-Setup.exe)
+# -------------------------------------------------------------
+Write-Host "`n=== Building Standalone Setup Executable (NewPilot-Setup.exe) ===" -ForegroundColor Cyan
+$installerBuildDir = Join-Path $rootDir "build\installer"
+cmake -B $installerBuildDir -S (Join-Path $rootDir "installer") -G "Visual Studio 17 2022" -A x64
+cmake --build $installerBuildDir --config $Configuration
+
+$setupExePath = Join-Path $installerBuildDir "$Configuration\NewPilot-Setup.exe"
+$outSetupExePath = Join-Path $outDir "NewPilot-Setup.exe"
+$setupSizeKB = 0
+
+if (Test-Path $setupExePath) {
+    Copy-Item $setupExePath -Destination $outSetupExePath -Force
+    # Sign NewPilot-Setup.exe with developer certificate
+    & $signtool sign /fd SHA256 /sha1 $cert.Thumbprint $outSetupExePath
+    $setupSizeKB = [math]::Round(((Get-Item $outSetupExePath).Length / 1KB), 2)
+    Write-Host "Created Standalone Setup: $outSetupExePath ($setupSizeKB KB)" -ForegroundColor Green
+} else {
+    Write-Warning "NewPilot-Setup.exe was not found at $setupExePath"
+}
+
 Write-Host "`n=======================================================" -ForegroundColor Green
 Write-Host "SUCCESS! Packages built and ready!" -ForegroundColor Green
 Write-Host "Store Package (Upload to Partner Center): $storeMsixPath ($storeMsixSizeKB KB)" -ForegroundColor Green
 Write-Host "Sideload Package (Local testing): $msixPath ($msixSizeKB KB)" -ForegroundColor Green
+Write-Host "Standalone Setup (.exe Installer): $outSetupExePath ($setupSizeKB KB)" -ForegroundColor Green
 Write-Host "Executable Size: $exePath ($exeSizeKB KB)" -ForegroundColor Green
 Write-Host "=======================================================" -ForegroundColor Green
