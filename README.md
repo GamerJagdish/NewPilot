@@ -29,7 +29,7 @@ Install the official Microsoft-signed package directly through the Microsoft Sto
 Install the official Microsoft-signed package from Windows Terminal / PowerShell with zero Store UI:
 
 ```powershell
-winget install 9NGW4QTD1SWF
+winget install "NewPilot"
 ```
 
 ### Option 3: Standalone 1-Click Installer (.exe)
