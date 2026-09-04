@@ -19,6 +19,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Extract Package Version from Manifest
+        id: pkg_version
+        shell: powershell
+        run: |
+          [xml]$manifest = Get-Content "packaging/AppxManifest.xml"
+          $rawVersion = $manifest.Package.Identity.Version
+          $parts = $rawVersion.Split('.')
+          $tag = if ($parts.Length -ge 4 -and $parts[3] -eq '0') { "v" + ($parts[0..2] -join '.') } else { "v" + $rawVersion }
+          Write-Host "Detected package version: $rawVersion -> Release Tag: $tag"
+          "version_tag=$tag" >> $env:GITHUB_OUTPUT
+
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v3
 
@@ -72,6 +83,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || steps.pkg_version.outputs.version_tag }}
+          name: NewPilot ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || steps.pkg_version.outputs.version_tag }}
           files: |
             build/out/NewPilot-Setup.exe
             build/out/NewPilot.msix
