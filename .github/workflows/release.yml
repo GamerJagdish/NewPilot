@@ -68,8 +68,7 @@ jobs:
             "build\out\NewPilot-Setup.exe",
             "build\out\NewPilot.msix",
             "build\out\NewPilotDevCert.cer",
-            "build\out\NewPilot.Store.msix",
-            "build\Release\NewPilot.exe"
+            "build\out\NewPilot.Store.msix"
           )
           foreach ($file in $artifacts) {
             if (-not (Test-Path $file)) {
@@ -79,16 +78,105 @@ jobs:
             Write-Host ("Artifact verified: {0} ({1:N2} KB)" -f $file, $size)
           }
 
+      - name: Generate Release Notes
+        shell: powershell
+        run: |
+          $tag = "${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || steps.pkg_version.outputs.version_tag }}"
+          $prevTag = (git tag -l --sort=-v:refname "v*" | Where-Object { $_ -ne $tag } | Select-Object -First 1)
+          $range = if ($prevTag) { "$prevTag..HEAD" } else { "HEAD" }
+
+          $logOutput = @(git log $range --pretty=format:"%h|%an|%ae|%s")
+
+          $commits = @()
+          foreach ($line in $logOutput) {
+              if (-not $line) { continue }
+              $parts = $line.Split('|', 4)
+              if ($parts.Length -lt 4) { continue }
+              $hash = $parts[0]
+              $authorName = $parts[1]
+              $email = $parts[2]
+              $msg = $parts[3]
+
+              $username = $null
+              if ($email -match '^[0-9]+\+([^@]+)@users\.noreply\.github\.com$') {
+                  $username = $matches[1]
+              } elseif ($authorName -eq "ImgBotApp" -or $email -like "*imgbot*") {
+                  $username = "imgbot[bot]"
+              } elseif ($authorName -match '^[a-zA-Z0-9_-]+$') {
+                  $username = $authorName
+              } else {
+                  $username = "GamerJagdish"
+              }
+
+              $commits += "* $msg by @$username in https://github.com/GamerJagdish/NewPilot/commit/$hash"
+          }
+
+          $newContributors = [System.Collections.Generic.Dictionary[string, string]]::new()
+          for ($i = $logOutput.Count - 1; $i -ge 0; $i--) {
+              $line = $logOutput[$i]
+              if (-not $line) { continue }
+              $parts = $line.Split('|', 4)
+              if ($parts.Length -lt 4) { continue }
+              $hash = $parts[0]
+              $authorName = $parts[1]
+              $email = $parts[2]
+
+              $username = $null
+              if ($email -match '^[0-9]+\+([^@]+)@users\.noreply\.github\.com$') {
+                  $username = $matches[1]
+              } elseif ($authorName -eq "ImgBotApp" -or $email -like "*imgbot*") {
+                  $username = "imgbot[bot]"
+              } elseif ($authorName -match '^[a-zA-Z0-9_-]+$') {
+                  $username = $authorName
+              } else {
+                  $username = "GamerJagdish"
+              }
+
+              if (-not $newContributors.ContainsKey($username)) {
+                  $priorCommits = 0
+                  if ($prevTag) {
+                      $priorCommits = [int](git log "$prevTag" --author="$email" --oneline | Measure-Object -Line).Lines
+                  }
+                  if ($priorCommits -eq 0) {
+                      $newContributors[$username] = $hash
+                  }
+              }
+          }
+
+          $changelog = @("## What's Changed")
+          $changelog += $commits
+
+          if ($newContributors.Count -gt 0) {
+              $changelog += ""
+              $changelog += "## New Contributors"
+              foreach ($kvp in $newContributors.GetEnumerator()) {
+                  $changelog += "* @$($kvp.Key) made their first contribution in https://github.com/GamerJagdish/NewPilot/commit/$($kvp.Value)"
+              }
+          }
+
+          $changelog += ""
+          if ($prevTag) {
+              $changelog += "**Full Changelog**: https://github.com/GamerJagdish/NewPilot/compare/$prevTag...$tag"
+          } else {
+              $changelog += "**Full Changelog**: https://github.com/GamerJagdish/NewPilot/commits/$tag"
+          }
+
+          $content = $changelog -join "`n"
+          if (-not (Test-Path "build/out")) {
+              New-Item -ItemType Directory -Force -Path "build/out" | Out-Null
+          }
+          [System.IO.File]::WriteAllText((Join-Path (Get-Location) "build/out/CHANGELOG.md"), $content, [System.Text.Encoding]::UTF8)
+          Write-Host "Changelog generated successfully."
+
       - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || steps.pkg_version.outputs.version_tag }}
           name: NewPilot ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || steps.pkg_version.outputs.version_tag }}
+          body_path: build/out/CHANGELOG.md
           files: |
             build/out/NewPilot-Setup.exe
             build/out/NewPilot.msix
             build/out/NewPilotDevCert.cer
             build/out/NewPilot.Store.msix
-            build/Release/NewPilot.exe
-          generate_release_notes: true
