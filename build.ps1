@@ -12,7 +12,7 @@ $rootDir = $PSScriptRoot
 Set-Location $rootDir
 
 Write-Host "=== Building NewPilot Native C++ Executable ===" -ForegroundColor Cyan
-cmake -B build -S . -G "Visual Studio 17 2022" -A x64
+cmake -B build -S . -A x64
 cmake --build build --config $Configuration
 
 $exePath = Join-Path $rootDir "build\$Configuration\NewPilot.exe"
@@ -37,20 +37,22 @@ Copy-Item $exePath -Destination (Join-Path $stagingDir "NewPilot.exe")
 Copy-Item (Join-Path $rootDir "packaging\resources\Images") -Destination (Join-Path $stagingDir "Images") -Recurse
 
 # Find SDK tools dynamically
-$sdkBin = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64"
-$makeappx = Join-Path $sdkBin "makeappx.exe"
-$signtool = Join-Path $sdkBin "signtool.exe"
-$makepri = Join-Path $sdkBin "makepri.exe"
+function Find-SdkTool([string]$toolName) {
+    $candidate = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\$toolName"
+    if (Test-Path $candidate) { return $candidate }
+    $cmd = Get-Command $toolName -ErrorAction SilentlyContinue
+    if ($cmd) { return $cmd.Source }
+    $kitsDir = "C:\Program Files (x86)\Windows Kits"
+    if (Test-Path $kitsDir) {
+        $found = (Get-ChildItem -Path $kitsDir -Filter $toolName -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.FullName -like "*x64*" } | Select-Object -First 1).FullName
+        if ($found) { return $found }
+    }
+    return $toolName
+}
 
-if (-not (Test-Path $makeappx)) {
-    $makeappx = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "makeappx.exe" -Recurse | Where-Object { $_.FullName -like "*x64*" } | Select-Object -First 1).FullName
-}
-if (-not (Test-Path $signtool)) {
-    $signtool = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "signtool.exe" -Recurse | Where-Object { $_.FullName -like "*x64*" } | Select-Object -First 1).FullName
-}
-if (-not (Test-Path $makepri)) {
-    $makepri = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "makepri.exe" -Recurse | Where-Object { $_.FullName -like "*x64*" } | Select-Object -First 1).FullName
-}
+$makeappx = Find-SdkTool "makeappx.exe"
+$signtool = Find-SdkTool "signtool.exe"
+$makepri = Find-SdkTool "makepri.exe"
 
 # -------------------------------------------------------------
 # 1. BUILD MICROSOFT STORE PACKAGE (Unsigned for Partner Center)
@@ -126,7 +128,7 @@ Write-Host "`n=== Signing Local Sideload Package ===" -ForegroundColor Cyan
 # -------------------------------------------------------------
 Write-Host "`n=== Building Standalone Setup Executable (NewPilot-Setup.exe) ===" -ForegroundColor Cyan
 $installerBuildDir = Join-Path $rootDir "build\installer"
-cmake -B $installerBuildDir -S (Join-Path $rootDir "installer") -G "Visual Studio 17 2022" -A x64
+cmake -B $installerBuildDir -S (Join-Path $rootDir "installer") -A x64
 cmake --build $installerBuildDir --config $Configuration
 
 $setupExePath = Join-Path $installerBuildDir "$Configuration\NewPilot-Setup.exe"
