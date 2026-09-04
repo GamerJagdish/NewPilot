@@ -18,13 +18,30 @@
 
 ## Download & Installation
 
-### Option 1: Official Microsoft Store (Recommended)
+### Option 1: Microsoft Store (Recommended)
+Install the official Microsoft-signed package directly through the Microsoft Store:
 
-| Open in Microsoft Store | Direct .exe Installer Download |
-| :---: | :---: |
-| <a href="https://apps.microsoft.com/detail/9NGW4QTD1SWF?referrer=appbadge&mode=full" target="_blank" rel="noopener noreferrer"><img src="https://get.microsoft.com/images/en-us%20dark.svg" width="160" alt="Open in Store"/></a> | <a href="https://get.microsoft.com/installer/download/9NGW4QTD1SWF?referrer=appbadge" target="_self"><img src="https://img.shields.io/badge/Download-.exe-0078D4?style=for-the-badge&logo=windows" width="160" alt="Direct .exe Download"/></a> |
+<a href="https://apps.microsoft.com/detail/9NGW4QTD1SWF?referrer=appbadge&mode=full" target="_blank" rel="noopener noreferrer">
+	<img src="https://get.microsoft.com/images/en-us%20dark.svg" width="180" alt="Download from Microsoft Store"/>
+</a>
 
-### Option 2: One-Click PowerShell Web Installer
+### Option 2: WinGet (Command Line)
+Install the official Microsoft-signed package from Windows Terminal / PowerShell with zero Store UI:
+
+```powershell
+winget install 9NGW4QTD1SWF
+```
+
+### Option 3: Standalone 1-Click Installer (.exe)
+Prefer an offline installer without Microsoft Store? Download and run the standalone setup executable from GitHub Releases:
+
+<a href="https://github.com/GamerJagdish/NewPilot/releases/latest/download/NewPilot-Setup.exe" target="_self">
+	<img src="https://img.shields.io/badge/Download-NewPilot--Setup.exe-0078D4?style=for-the-badge&logo=windows" height="40" alt="Download NewPilot-Setup.exe"/>
+</a>
+
+*(Automatically trusts the developer certificate, registers the MSIX package into Windows 11, and opens NewPilot Settings with zero Microsoft Store interaction).*
+
+### Option 4: One-Click PowerShell Web Installer
 Open **PowerShell as Administrator** and execute:
 
 ```powershell
