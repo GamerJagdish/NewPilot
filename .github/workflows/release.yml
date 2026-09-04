@@ -1,0 +1,81 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+
+      - name: Import Signing Certificate
+        shell: powershell
+        env:
+          DEV_CERT_BASE64: ${{ secrets.DEV_CERT_BASE64 }}
+          DEV_CERT_PASSWORD: ${{ secrets.DEV_CERT_PASSWORD }}
+        run: |
+          if ($env:DEV_CERT_BASE64) {
+            $certBytes = [System.Convert]::FromBase64String($env:DEV_CERT_BASE64)
+            $cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new(
+              $certBytes,
+              $env:DEV_CERT_PASSWORD,
+              [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet
+            )
+            $store = [System.Security.Cryptography.X509Certificates.X509Store]::new("My", "CurrentUser")
+            $store.Open("ReadWrite")
+            $store.Add($cert)
+            $store.Close()
+            [System.Array]::Clear($certBytes, 0, $certBytes.Length)
+            Write-Host "Developer signing certificate successfully imported (Thumbprint: $($cert.Thumbprint))."
+          } else {
+            Write-Host "DEV_CERT_BASE64 secret not found. A fallback self-signed certificate will be generated."
+          }
+
+      - name: Build NewPilot & Packages
+        shell: powershell
+        run: |
+          .\build.ps1 -Configuration Release
+
+      - name: Verify Built Artifacts
+        shell: powershell
+        run: |
+          $artifacts = @(
+            "build\out\NewPilot-Setup.exe",
+            "build\out\NewPilot.msix",
+            "build\out\NewPilotDevCert.cer",
+            "build\out\NewPilot.Store.msix",
+            "build\Release\NewPilot.exe"
+          )
+          foreach ($file in $artifacts) {
+            if (-not (Test-Path $file)) {
+              throw "Expected artifact not found: $file"
+            }
+            $size = (Get-Item $file).Length / 1KB
+            Write-Host ("Artifact verified: {0} ({1:N2} KB)" -f $file, $size)
+          }
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        with:
+          files: |
+            build/out/NewPilot-Setup.exe
+            build/out/NewPilot.msix
+            build/out/NewPilotDevCert.cer
+            build/out/NewPilot.Store.msix
+            build/Release/NewPilot.exe
+          generate_release_notes: true
