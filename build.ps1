@@ -38,14 +38,15 @@ Copy-Item (Join-Path $rootDir "packaging\resources\Images") -Destination (Join-P
 
 # Find SDK tools dynamically
 function Find-SdkTool([string]$toolName) {
-    $candidate = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\$toolName"
-    if (Test-Path $candidate) { return $candidate }
     $cmd = Get-Command $toolName -ErrorAction SilentlyContinue
     if ($cmd) { return $cmd.Source }
-    $kitsDir = "C:\Program Files (x86)\Windows Kits"
-    if (Test-Path $kitsDir) {
-        $found = (Get-ChildItem -Path $kitsDir -Filter $toolName -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.FullName -like "*x64*" } | Select-Object -First 1).FullName
-        if ($found) { return $found }
+    $kitsBin = "C:\Program Files (x86)\Windows Kits\10\bin"
+    if (Test-Path $kitsBin) {
+        $sdkDirs = Get-ChildItem $kitsBin -Directory -ErrorAction SilentlyContinue | Sort-Object Name -Descending
+        foreach ($dir in $sdkDirs) {
+            $candidate = Join-Path $dir.FullName "x64\$toolName"
+            if (Test-Path $candidate) { return $candidate }
+        }
     }
     return $toolName
 }
@@ -116,12 +117,16 @@ $cerPath = Join-Path $outDir "NewPilotDevCert.cer"
 Export-Certificate -Cert $cert -FilePath $cerPath -Force | Out-Null
 Write-Host "Exported developer certificate to: $cerPath" -ForegroundColor Green
 
-# Trust cert locally in CurrentUser Root and TrustedPeople
-Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\CurrentUser\Root | Out-Null
-Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\CurrentUser\TrustedPeople | Out-Null
+# Trust cert locally in CurrentUser TrustedPeople (for local testing only, skipped in CI)
+if (-not $env:CI -and -not $env:GITHUB_ACTIONS) {
+    Import-Certificate -FilePath $cerPath -CertStoreLocation Cert:\CurrentUser\TrustedPeople | Out-Null
+}
 
 Write-Host "`n=== Signing Local Sideload Package ===" -ForegroundColor Cyan
 & $signtool sign /fd SHA256 /sha1 $cert.Thumbprint $msixPath
+if ($LASTEXITCODE -ne 0) {
+    throw "Signtool failed to sign MSIX package."
+}
 
 # -------------------------------------------------------------
 # 3. BUILD STANDALONE SETUP EXECUTABLE (NewPilot-Setup.exe)
@@ -139,10 +144,13 @@ if (Test-Path $setupExePath) {
     Copy-Item $setupExePath -Destination $outSetupExePath -Force
     # Sign NewPilot-Setup.exe with developer certificate
     & $signtool sign /fd SHA256 /sha1 $cert.Thumbprint $outSetupExePath
+    if ($LASTEXITCODE -ne 0) {
+        throw "Signtool failed to sign NewPilot-Setup.exe"
+    }
     $setupSizeKB = [math]::Round(((Get-Item $outSetupExePath).Length / 1KB), 2)
     Write-Host "Created Standalone Setup: $outSetupExePath ($setupSizeKB KB)" -ForegroundColor Green
 } else {
-    Write-Warning "NewPilot-Setup.exe was not found at $setupExePath"
+    throw "NewPilot-Setup.exe failed to build at $setupExePath"
 }
 
 Write-Host "`n=======================================================" -ForegroundColor Green
