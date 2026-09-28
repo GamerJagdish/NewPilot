@@ -88,6 +88,7 @@ Existing solutions rely on heavy runtimes (.NET SDK, Electron, WPF), introducing
   - Volume Up / Volume Down
   - Media Controls (Play / Pause / Track Skip)
   - Lock PC (`Win + L`)
+- **Do Nothing**: Yup, Nothing at all.
 - **Native GUI**: Built with Windows 11 Visual Styles (Common Controls v6) and anti-aliased Segoe UI typography.
 - **Optional System Tray Icon**: Low-footprint background daemon with sign-in auto-start support.
 
