@@ -190,6 +190,9 @@ bool ActionRunner::run(const KeyAction& action) {
         case ActionKind::Hotkey:
             return send_hotkey(action.virtual_key, action.modifiers);
 
+        case ActionKind::None:
+            return true;
+
         default:
             return false;
     }

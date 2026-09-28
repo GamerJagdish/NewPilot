@@ -99,7 +99,7 @@ bool SettingsUI::focus_existing_window() {
 static void update_control_visibility(HWND hWnd) {
     int sel = (int)SendMessageW(GetDlgItem(hWnd, IDC_COMBO_ACTION_KIND), CB_GETCURSEL, 0, 0);
 
-    // 0: Menu Key, 1: Store/System App, 2: Custom File/EXE, 3: Hotkey Preset
+    // 0: Menu Key, 1: Store/System App, 2: Custom File/EXE, 3: Hotkey Preset, 4: Do Nothing
     ShowWindow(GetDlgItem(hWnd, IDC_LBL_APP_PICKER), (sel == 1) ? SW_SHOW : SW_HIDE);
     ShowWindow(GetDlgItem(hWnd, IDC_COMBO_APP_PICKER), (sel == 1) ? SW_SHOW : SW_HIDE);
 
@@ -123,11 +123,13 @@ static void populate_dialog_data(HWND hWnd) {
     SendMessageW(hKindCombo, CB_ADDSTRING, 0, (LPARAM)L"Launch Store / System App");
     SendMessageW(hKindCombo, CB_ADDSTRING, 0, (LPARAM)L"Launch Custom File / Program / URL");
     SendMessageW(hKindCombo, CB_ADDSTRING, 0, (LPARAM)L"Quick Hotkey / System Action");
+    SendMessageW(hKindCombo, CB_ADDSTRING, 0, (LPARAM)L"Do Nothing");
 
     int kind_idx = 0;
     if (g_config.tap_action.kind == ActionKind::ShellApp) kind_idx = 1;
     else if (g_config.tap_action.kind == ActionKind::File || g_config.tap_action.kind == ActionKind::Command) kind_idx = 2;
     else if (g_config.tap_action.kind == ActionKind::Hotkey) kind_idx = 3;
+    else if (g_config.tap_action.kind == ActionKind::None) kind_idx = 4;
     SendMessageW(hKindCombo, CB_SETCURSEL, kind_idx, 0);
 
     // Populate Apps Combo
@@ -197,6 +199,8 @@ static KeyAction build_action_from_ui(HWND hWnd) {
             action.virtual_key = g_presets[preset_idx].vk;
             action.modifiers = g_presets[preset_idx].mods;
         }
+    } else if (kind_idx == 4) {
+        action.kind = ActionKind::None;
     }
     return action;
 }

@@ -7,7 +7,8 @@ enum class ActionKind {
     ShellApp = 1,
     File = 2,
     Hotkey = 3,
-    Command = 4
+    Command = 4,
+    None = 5
 };
 
 struct KeyAction {
@@ -22,6 +23,7 @@ struct KeyAction {
     bool is_configured() const {
         switch (kind) {
             case ActionKind::MenuKey:
+            case ActionKind::None:
                 return true;
             case ActionKind::ShellApp:
                 return !aumid.empty();
