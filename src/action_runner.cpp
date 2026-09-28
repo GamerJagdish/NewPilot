@@ -55,6 +55,10 @@ bool ActionRunner::send_menu_key() {
 bool ActionRunner::send_hotkey(WORD virtual_key, DWORD modifiers) {
     release_stuck_modifiers();
 
+    if (virtual_key == 'L' && modifiers == MOD_WIN) {
+        return LockWorkStation() == TRUE;
+    }
+
     INPUT inputs[10] = {};
     int count = 0;
 
