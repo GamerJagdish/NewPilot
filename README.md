@@ -8,17 +8,20 @@
 </a>
 
 ---
+
 ## Screenshots
 
 <p align="center">
-  <img src="screenshots/newpilot-screenshot-1.png" alt="NewPilot app selection screenshot" width="250" />
-  <img src="screenshots/newpilot-screenshot-2.png" alt="NewPilot preset selection screenshot" width="250" />
-  <img src="screenshots/newpilot-screenshot-3.png" alt="NewPilot custom menu screenshot" width="250" />
+  <img src="screenshots/newpilot-screenshot-1.png" alt="NewPilot app selection screenshot" width="350" />
+  <img src="screenshots/newpilot-screenshot-2.png" alt="NewPilot preset selection screenshot" width="350" />
+  <img src="screenshots/newpilot-screenshot-3.png" alt="NewPilot custom menu screenshot" width="350" />
+  <img src="screenshots/newpilot-screenshot-4.png" alt="NewPilot do nothing screenshot" width="350" />
 </p>
 
 ## Download & Installation
 
 ### Option 1: Microsoft Store (Recommended)
+
 Install the official Microsoft-signed package directly through the Microsoft Store:
 
 <a href="https://apps.microsoft.com/detail/9NGW4QTD1SWF?referrer=appbadge&mode=full" target="_blank" rel="noopener noreferrer">
@@ -26,6 +29,7 @@ Install the official Microsoft-signed package directly through the Microsoft Sto
 </a>
 
 ### Option 2: WinGet (Command Line)
+
 Install the official Microsoft-signed package from Windows Terminal / PowerShell with zero Store UI:
 
 ```powershell
@@ -33,24 +37,27 @@ winget install "NewPilot"
 ```
 
 ### Option 3: Standalone 1-Click Installer (.exe)
+
 Prefer an offline installer without Microsoft Store? Download and run the standalone setup executable from GitHub Releases:
 
 <a href="https://github.com/GamerJagdish/NewPilot/releases/latest/download/NewPilot-Setup.exe" target="_self">
 	<img src="https://img.shields.io/badge/Download-NewPilot--Setup.exe-0078D4?style=for-the-badge&logo=windows" height="40" alt="Download NewPilot-Setup.exe"/>
 </a>
 
-*(Automatically trusts the developer certificate, registers the MSIX package into Windows 11, and opens NewPilot Settings with zero Microsoft Store interaction).*
+_(Automatically trusts the developer certificate, registers the MSIX package into Windows 11, and opens NewPilot Settings with zero Microsoft Store interaction)._
 
 ### Option 4: One-Click PowerShell Web Installer
+
 Open **PowerShell as Administrator** and execute:
 
 ```powershell
 irm https://raw.githubusercontent.com/GamerJagdish/NewPilot/main/install.ps1 | iex
 ```
 
-*(This command trusts the security certificate, installs the MSIX package, and opens the Settings configuration dialog).*
+_(This command trusts the security certificate, installs the MSIX package, and opens the Settings configuration dialog)._
 
 ### Enabling NewPilot in Windows 11
+
 1. Open **Windows 11 Settings**.
 2. Go to **Bluetooth & devices** → **Keyboard**.
 3. Under **Shortcuts and hotkeys**, locate **Customize Copilot key on keyboard**.
@@ -66,13 +73,13 @@ Existing solutions rely on heavy runtimes (.NET SDK, Electron, WPF), introducing
 
 ### Benchmark Comparison
 
-| Metric | Heavy .NET / Electron Alternatives | **NewPilot (Native C++)** | Improvement |
-| :--- | :--- | :--- | :--- |
-| **Installed App Size** | ~15 MB – 60 MB+ | **~290 KB** | **> 99% Smaller** |
-| **MSIX Package Size** | ~15 MB – 50 MB | **~150 KB** | **> 99% Smaller** |
-| **Keypress Latency** | ~100ms – 300ms (.NET CLR init) | **< 5ms** (Instantaneous) | **~30x Faster** |
-| **Tray Memory Usage** | 30 MB – 80 MB RAM | **< 2 MB RAM** | **> 93% RAM Reduction** |
-| **Dependencies** | .NET 10 SDK / Runtime | **Zero Runtimes** (Pure Win32 C++) | Native Windows OS API |
+| Metric                 | Heavy .NET / Electron Alternatives | **NewPilot (Native C++)**          | Improvement             |
+| :--------------------- | :--------------------------------- | :--------------------------------- | :---------------------- |
+| **Installed App Size** | ~15 MB – 60 MB+                    | **~290 KB**                        | **> 99% Smaller**       |
+| **MSIX Package Size**  | ~15 MB – 50 MB                     | **~150 KB**                        | **> 99% Smaller**       |
+| **Keypress Latency**   | ~100ms – 300ms (.NET CLR init)     | **< 5ms** (Instantaneous)          | **~30x Faster**         |
+| **Tray Memory Usage**  | 30 MB – 80 MB RAM                  | **< 2 MB RAM**                     | **> 93% RAM Reduction** |
+| **Dependencies**       | .NET 10 SDK / Runtime              | **Zero Runtimes** (Pure Win32 C++) | Native Windows OS API   |
 
 ---
 
