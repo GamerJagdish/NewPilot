@@ -214,74 +214,73 @@ static LRESULT CALLBACK SettingsWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
             INITCOMMONCONTROLSEX icex = { sizeof(icex), ICC_STANDARD_CLASSES | ICC_LINK_CLASS };
             InitCommonControlsEx(&icex);
 
-            // Create clean Segoe UI font
+            // Clean, standard Segoe UI font (ClearType quality, natively scaled)
             g_hFont = CreateFontW(-12, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
                 DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
                 CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE, L"Segoe UI");
 
             // Action Kind Header
-            HWND hLblKind = CreateWindowW(L"STATIC", L"When Copilot key is pressed:", WS_CHILD | WS_VISIBLE, 20, 18, 440, 18, hWnd, NULL, NULL, NULL);
+            HWND hLblKind = CreateWindowW(L"STATIC", L"When Copilot key is pressed:", WS_CHILD | WS_VISIBLE, 20, 18, 450, 18, hWnd, NULL, NULL, NULL);
             SendMessageW(hLblKind, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            HWND hKindCombo = CreateWindowW(L"COMBOBOX", NULL, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL, 20, 40, 440, 150, hWnd, (HMENU)IDC_COMBO_ACTION_KIND, NULL, NULL);
+            HWND hKindCombo = CreateWindowW(L"COMBOBOX", NULL, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL, 20, 40, 450, 160, hWnd, (HMENU)IDC_COMBO_ACTION_KIND, NULL, NULL);
             SendMessageW(hKindCombo, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
             // App Picker Controls (Option 1)
-            HWND hLblApp = CreateWindowW(L"STATIC", L"Select Application:", WS_CHILD, 20, 75, 440, 18, hWnd, (HMENU)IDC_LBL_APP_PICKER, NULL, NULL);
+            HWND hLblApp = CreateWindowW(L"STATIC", L"Select Application:", WS_CHILD, 20, 74, 450, 18, hWnd, (HMENU)IDC_LBL_APP_PICKER, NULL, NULL);
             SendMessageW(hLblApp, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            HWND hAppCombo = CreateWindowW(L"COMBOBOX", NULL, WS_CHILD | CBS_DROPDOWNLIST | WS_VSCROLL, 20, 96, 440, 250, hWnd, (HMENU)IDC_COMBO_APP_PICKER, NULL, NULL);
+            HWND hAppCombo = CreateWindowW(L"COMBOBOX", NULL, WS_CHILD | CBS_DROPDOWNLIST | WS_VSCROLL, 20, 95, 450, 250, hWnd, (HMENU)IDC_COMBO_APP_PICKER, NULL, NULL);
             SendMessageW(hAppCombo, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
             // File/Program/URL Path Controls (Option 2)
-            HWND hLblPath = CreateWindowW(L"STATIC", L"Target File, Program, or URL Path:", WS_CHILD, 20, 75, 440, 18, hWnd, (HMENU)IDC_LBL_PATH, NULL, NULL);
+            HWND hLblPath = CreateWindowW(L"STATIC", L"Target File, Program, or URL Path:", WS_CHILD, 20, 74, 450, 18, hWnd, (HMENU)IDC_LBL_PATH, NULL, NULL);
             SendMessageW(hLblPath, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            // Edit height set to 23px for perfect vertical text centering in Windows 11
-            HWND hEditPath = CreateWindowW(L"EDIT", L"", WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, 20, 96, 340, 23, hWnd, (HMENU)IDC_EDIT_PATH, NULL, NULL);
+            HWND hEditPath = CreateWindowW(L"EDIT", L"", WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, 20, 95, 350, 23, hWnd, (HMENU)IDC_EDIT_PATH, NULL, NULL);
             SendMessageW(hEditPath, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            HWND hBtnBrowse = CreateWindowW(L"BUTTON", L"Browse...", WS_CHILD | BS_PUSHBUTTON, 370, 96, 90, 23, hWnd, (HMENU)IDC_BTN_BROWSE, NULL, NULL);
+            HWND hBtnBrowse = CreateWindowW(L"BUTTON", L"Browse...", WS_CHILD | BS_PUSHBUTTON, 380, 95, 90, 23, hWnd, (HMENU)IDC_BTN_BROWSE, NULL, NULL);
             SendMessageW(hBtnBrowse, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            HWND hLblArgs = CreateWindowW(L"STATIC", L"Command-Line Arguments (Optional):", WS_CHILD, 20, 127, 440, 18, hWnd, (HMENU)IDC_LBL_ARGS, NULL, NULL);
+            HWND hLblArgs = CreateWindowW(L"STATIC", L"Command-Line Arguments (Optional):", WS_CHILD, 20, 127, 450, 18, hWnd, (HMENU)IDC_LBL_ARGS, NULL, NULL);
             SendMessageW(hLblArgs, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            HWND hEditArgs = CreateWindowW(L"EDIT", L"", WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, 20, 148, 440, 23, hWnd, (HMENU)IDC_EDIT_ARGS, NULL, NULL);
+            HWND hEditArgs = CreateWindowW(L"EDIT", L"", WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, 20, 148, 450, 23, hWnd, (HMENU)IDC_EDIT_ARGS, NULL, NULL);
             SendMessageW(hEditArgs, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
             // Hotkey Preset Controls (Option 3)
-            HWND hLblPreset = CreateWindowW(L"STATIC", L"Select Preset Action:", WS_CHILD, 20, 75, 440, 18, hWnd, (HMENU)IDC_LBL_PRESET, NULL, NULL);
+            HWND hLblPreset = CreateWindowW(L"STATIC", L"Select Preset Action:", WS_CHILD, 20, 74, 450, 18, hWnd, (HMENU)IDC_LBL_PRESET, NULL, NULL);
             SendMessageW(hLblPreset, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            HWND hPresetCombo = CreateWindowW(L"COMBOBOX", NULL, WS_CHILD | CBS_DROPDOWNLIST | WS_VSCROLL, 20, 96, 440, 200, hWnd, (HMENU)IDC_COMBO_PRESET, NULL, NULL);
+            HWND hPresetCombo = CreateWindowW(L"COMBOBOX", NULL, WS_CHILD | CBS_DROPDOWNLIST | WS_VSCROLL, 20, 95, 450, 200, hWnd, (HMENU)IDC_COMBO_PRESET, NULL, NULL);
             SendMessageW(hPresetCombo, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
             // Button to open Windows 11 Keyboard Settings directly
-            HWND hBtnOpenWinSettings = CreateWindowW(L"BUTTON", L"Open Windows Keyboard Settings", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 20, 180, 440, 30, hWnd, (HMENU)IDC_BTN_OPEN_WIN_SETTINGS, NULL, NULL);
+            HWND hBtnOpenWinSettings = CreateWindowW(L"BUTTON", L"Open Windows Keyboard Settings", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 20, 180, 450, 30, hWnd, (HMENU)IDC_BTN_OPEN_WIN_SETTINGS, NULL, NULL);
             SendMessageW(hBtnOpenWinSettings, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
             // Group Box for System Tray & Startup Options
-            HWND hGroupTray = CreateWindowW(L"BUTTON", L"Tray and Startup Options", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 20, 220, 440, 85, hWnd, NULL, NULL, NULL);
+            HWND hGroupTray = CreateWindowW(L"BUTTON", L"Tray and Startup Options", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 20, 220, 450, 85, hWnd, NULL, NULL, NULL);
             SendMessageW(hGroupTray, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            HWND hChkTray = CreateWindowW(L"BUTTON", L"Show notification area (tray) icon", WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 35, 242, 400, 20, hWnd, (HMENU)IDC_CHK_SHOW_TRAY, NULL, NULL);
+            HWND hChkTray = CreateWindowW(L"BUTTON", L"Show notification area (tray) icon", WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_VCENTER, 35, 244, 410, 18, hWnd, (HMENU)IDC_CHK_SHOW_TRAY, NULL, NULL);
             SendMessageW(hChkTray, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            HWND hChkStart = CreateWindowW(L"BUTTON", L"Start tray icon automatically when I sign in", WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 35, 268, 400, 20, hWnd, (HMENU)IDC_CHK_AUTO_START, NULL, NULL);
+            HWND hChkStart = CreateWindowW(L"BUTTON", L"Start tray icon automatically when I sign in", WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_VCENTER, 35, 270, 410, 18, hWnd, (HMENU)IDC_CHK_AUTO_START, NULL, NULL);
             SendMessageW(hChkStart, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
             // Action Buttons: Donate, Test Action, Save, Close
-            HWND hBtnDonate = CreateWindowW(L"BUTTON", L"Donate", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 20, 318, 95, 30, hWnd, (HMENU)IDC_BTN_DONATE, NULL, NULL);
+            HWND hBtnDonate = CreateWindowW(L"BUTTON", L"Donate", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_CENTER | BS_VCENTER, 20, 318, 95, 30, hWnd, (HMENU)IDC_BTN_DONATE, NULL, NULL);
             SendMessageW(hBtnDonate, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            HWND hBtnTest = CreateWindowW(L"BUTTON", L"Test Action", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 130, 318, 110, 30, hWnd, (HMENU)IDC_BTN_TEST, NULL, NULL);
+            HWND hBtnTest = CreateWindowW(L"BUTTON", L"Test Action", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_CENTER | BS_VCENTER, 130, 318, 120, 30, hWnd, (HMENU)IDC_BTN_TEST, NULL, NULL);
             SendMessageW(hBtnTest, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            HWND hBtnSave = CreateWindowW(L"BUTTON", L"Save", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 255, 318, 95, 30, hWnd, (HMENU)IDC_BTN_SAVE, NULL, NULL);
+            HWND hBtnSave = CreateWindowW(L"BUTTON", L"Save", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON | BS_CENTER | BS_VCENTER, 265, 318, 95, 30, hWnd, (HMENU)IDC_BTN_SAVE, NULL, NULL);
             SendMessageW(hBtnSave, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            HWND hBtnClose = CreateWindowW(L"BUTTON", L"Close", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 365, 318, 95, 30, hWnd, (HMENU)IDC_BTN_CLOSE, NULL, NULL);
+            HWND hBtnClose = CreateWindowW(L"BUTTON", L"Close", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_CENTER | BS_VCENTER, 375, 318, 95, 30, hWnd, (HMENU)IDC_BTN_CLOSE, NULL, NULL);
             SendMessageW(hBtnClose, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
             populate_dialog_data(hWnd);
@@ -379,8 +378,12 @@ void SettingsUI::show(HINSTANCE hInstance) {
     wcex.hIconSm = LoadIconW(hInstance, MAKEINTRESOURCEW(IDI_APP_ICON));
     RegisterClassExW(&wcex);
 
-    int width = 495;
-    int height = 400;
+    // Calculate exact window frame so client area is precisely 490x361 with balanced margins
+    RECT rc = { 0, 0, 490, 361 };
+    AdjustWindowRectEx(&rc, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, FALSE, 0);
+    int width = rc.right - rc.left;
+    int height = rc.bottom - rc.top;
+
     int screen_w = GetSystemMetrics(SM_CXSCREEN);
     int screen_h = GetSystemMetrics(SM_CYSCREEN);
     int x = (screen_w - width) / 2;

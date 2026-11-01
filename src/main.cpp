@@ -50,7 +50,13 @@ static bool is_protocol_activation(int argc, wchar_t* argv[], bool& out_should_i
     return false;
 }
 
+#ifndef DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED
+#define DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED ((DPI_AWARENESS_CONTEXT)-5)
+#endif
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED);
+
     int argc = 0;
     wchar_t** argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 
