@@ -58,11 +58,13 @@ static void apply_dark_mode(HWND hWnd) {
 
 #define IDC_CHK_SHOW_TRAY     2011
 #define IDC_CHK_AUTO_START    2012
-#define IDC_BTN_TEST          2013
-#define IDC_BTN_SAVE          2014
-#define IDC_BTN_CANCEL        2015
-#define IDC_BTN_ABOUT         2016
+#define IDC_BTN_DONATE        2013
+#define IDC_BTN_TEST          2014
+#define IDC_BTN_SAVE          2015
+#define IDC_BTN_CLOSE         2016
 #define IDC_BTN_OPEN_WIN_SETTINGS 2017
+
+#define IDT_SAVED_FEEDBACK    1001
 
 static AppConfig g_config;
 static std::vector<AppInfo> g_installed_apps;
@@ -269,18 +271,18 @@ static LRESULT CALLBACK SettingsWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
             HWND hChkStart = CreateWindowW(L"BUTTON", L"Start tray icon automatically when I sign in", WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 35, 268, 400, 20, hWnd, (HMENU)IDC_CHK_AUTO_START, NULL, NULL);
             SendMessageW(hChkStart, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            // Action Buttons
-            HWND hBtnTest = CreateWindowW(L"BUTTON", L"Test Action", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 20, 318, 90, 30, hWnd, (HMENU)IDC_BTN_TEST, NULL, NULL);
+            // Action Buttons: Donate, Test Action, Save, Close
+            HWND hBtnDonate = CreateWindowW(L"BUTTON", L"Donate", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 20, 318, 95, 30, hWnd, (HMENU)IDC_BTN_DONATE, NULL, NULL);
+            SendMessageW(hBtnDonate, WM_SETFONT, (WPARAM)g_hFont, TRUE);
+
+            HWND hBtnTest = CreateWindowW(L"BUTTON", L"Test Action", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 130, 318, 110, 30, hWnd, (HMENU)IDC_BTN_TEST, NULL, NULL);
             SendMessageW(hBtnTest, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            HWND hBtnAbout = CreateWindowW(L"BUTTON", L"About", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 118, 318, 80, 30, hWnd, (HMENU)IDC_BTN_ABOUT, NULL, NULL);
-            SendMessageW(hBtnAbout, WM_SETFONT, (WPARAM)g_hFont, TRUE);
-
-            HWND hBtnSave = CreateWindowW(L"BUTTON", L"Save and Close", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 230, 318, 120, 30, hWnd, (HMENU)IDC_BTN_SAVE, NULL, NULL);
+            HWND hBtnSave = CreateWindowW(L"BUTTON", L"Save", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 255, 318, 95, 30, hWnd, (HMENU)IDC_BTN_SAVE, NULL, NULL);
             SendMessageW(hBtnSave, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
-            HWND hBtnCancel = CreateWindowW(L"BUTTON", L"Cancel", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 360, 318, 100, 30, hWnd, (HMENU)IDC_BTN_CANCEL, NULL, NULL);
-            SendMessageW(hBtnCancel, WM_SETFONT, (WPARAM)g_hFont, TRUE);
+            HWND hBtnClose = CreateWindowW(L"BUTTON", L"Close", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 365, 318, 95, 30, hWnd, (HMENU)IDC_BTN_CLOSE, NULL, NULL);
+            SendMessageW(hBtnClose, WM_SETFONT, (WPARAM)g_hFont, TRUE);
 
             populate_dialog_data(hWnd);
             break;
@@ -309,11 +311,11 @@ static LRESULT CALLBACK SettingsWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
                 if (GetOpenFileNameW(&ofn)) {
                     SetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_PATH), file_buf);
                 }
+            } else if (id == IDC_BTN_DONATE) {
+                ShellExecuteW(NULL, L"open", L"https://gamerjagdish.com/donate", NULL, NULL, SW_SHOWNORMAL);
             } else if (id == IDC_BTN_TEST) {
                 KeyAction test_act = build_action_from_ui(hWnd);
                 ActionRunner::run(test_act);
-            } else if (id == IDC_BTN_ABOUT) {
-                ShellExecuteW(NULL, L"open", L"https://github.com/GamerJagdish/newpilot", NULL, NULL, SW_SHOWNORMAL);
             } else if (id == IDC_BTN_OPEN_WIN_SETTINGS) {
                 ShellExecuteW(NULL, L"open", L"ms-settings:personalization-textinput-copilot-hardwarekey", NULL, NULL, SW_SHOWNORMAL);
             } else if (id == IDC_BTN_SAVE) {
@@ -330,9 +332,19 @@ static LRESULT CALLBACK SettingsWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
                     TrayApplication::stop_tray_if_running();
                 }
 
+                // Temporary visual confirmation on the Save button
+                SetWindowTextW(GetDlgItem(hWnd, IDC_BTN_SAVE), L"Saved!");
+                SetTimer(hWnd, IDT_SAVED_FEEDBACK, 1200, NULL);
+            } else if (id == IDC_BTN_CLOSE) {
                 DestroyWindow(hWnd);
-            } else if (id == IDC_BTN_CANCEL) {
-                DestroyWindow(hWnd);
+            }
+            break;
+        }
+
+        case WM_TIMER: {
+            if (wParam == IDT_SAVED_FEEDBACK) {
+                KillTimer(hWnd, IDT_SAVED_FEEDBACK);
+                SetWindowTextW(GetDlgItem(hWnd, IDC_BTN_SAVE), L"Save");
             }
             break;
         }
