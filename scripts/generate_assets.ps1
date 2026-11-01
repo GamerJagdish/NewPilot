@@ -3,38 +3,71 @@ $dir = "d:\code\NewPilot\packaging\resources\Images"
 if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
 
 function Make-Logo($name, $w, $h) {
-    $bmp = New-Object System.Drawing.Bitmap($w, $h)
+    $bmp = New-Object System.Drawing.Bitmap($w, $h, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
     $g = [System.Drawing.Graphics]::FromImage($bmp)
     $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
     $g.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
+    $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+    $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
     
-    # Solid white background
-    $g.Clear([System.Drawing.Color]::FromArgb(255, 255, 255, 255))
-    $brush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 0, 0, 0))
+    # 100% Transparent canvas
+    $g.Clear([System.Drawing.Color]::Transparent)
     
-    # Calculate starting font size conservatively so "NP" fits inside
-    $fontSize = [math]::Max(7, [math]::Min($w, $h) / 3.4)
+    # Calculate padding and outer dimensions matching aspect ratio (w x h)
+    $minSide = [math]::Min($w, $h)
+    $pad = [math]::Max(1.0, [float]$minSide * 0.04)
+    $rectW = [float]$w - (2.0 * $pad)
+    $rectH = [float]$h - (2.0 * $pad)
+    $radius = [float]$minSide * 0.22 # Modern Windows 11 rounded corner radius
     
-    # Dynamically measure and scale down font size if needed
-    while ($fontSize -gt 4) {
-        $font = New-Object System.Drawing.Font("Segoe UI", $fontSize, [System.Drawing.FontStyle]::Bold)
-        $sz = $g.MeasureString("NP", $font)
-        if ($sz.Width -le ($w * 0.75) -and $sz.Height -le ($h * 0.75)) {
-            break
-        }
-        $fontSize = $fontSize - 0.5
-    }
+    $badgePath = New-Object System.Drawing.Drawing2D.GraphicsPath
+    $diameter = $radius * 2.0
     
-    $font = New-Object System.Drawing.Font("Segoe UI", $fontSize, [System.Drawing.FontStyle]::Bold)
-    $sf = New-Object System.Drawing.StringFormat
-    $sf.Alignment = [System.Drawing.StringAlignment]::Center
-    $sf.LineAlignment = [System.Drawing.StringAlignment]::Center
-    $rect = New-Object System.Drawing.RectangleF(0, 0, $w, $h)
+    # 4 rounded corners of the (w x h) shape
+    $badgePath.AddArc($pad, $pad, $diameter, $diameter, 180, 90)
+    $badgePath.AddArc($pad + $rectW - $diameter, $pad, $diameter, $diameter, 270, 90)
+    $badgePath.AddArc($pad + $rectW - $diameter, $pad + $rectH - $diameter, $diameter, $diameter, 0, 90)
+    $badgePath.AddArc($pad, $pad + $rectH - $diameter, $diameter, $diameter, 90, 90)
+    $badgePath.CloseFigure()
     
-    $g.DrawString("NP", $font, $brush, $rect, $sf)
+    # Pure White background
+    $bgBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 255, 255, 255))
+    $g.FillPath($bgBrush, $badgePath)
+    
+    # Subtle border for light backgrounds
+    $pen = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(28, 0, 0, 0), [math]::Max(1.0, [float]$minSide * 0.015))
+    $g.DrawPath($pen, $badgePath)
+    $pen.Dispose()
+    $badgePath.Dispose()
+    
+    # Vector glyph outline for mathematically perfect centering
+    $fontFamily = New-Object System.Drawing.FontFamily("Segoe UI")
+    $emSize = [float]$minSide * 0.48
+    $textPath = New-Object System.Drawing.Drawing2D.GraphicsPath
+    $sf = [System.Drawing.StringFormat]::GenericTypographic
+    $textPath.AddString("NP", $fontFamily, [int][System.Drawing.FontStyle]::Bold, $emSize, (New-Object System.Drawing.PointF(0, 0)), $sf)
+    
+    $bounds = $textPath.GetBounds()
+    $targetX = ([float]$w - $bounds.Width) / 2.0 - $bounds.X
+    $targetY = ([float]$h - $bounds.Height) / 2.0 - $bounds.Y
+    
+    $matrix = New-Object System.Drawing.Drawing2D.Matrix
+    $matrix.Translate($targetX, $targetY)
+    $textPath.Transform($matrix)
+    $matrix.Dispose()
+    
+    # PURE BLACK brush (0, 0, 0)
+    $blackBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 0, 0, 0))
+    $g.FillPath($blackBrush, $textPath)
+    
+    $textPath.Dispose()
+    $fontFamily.Dispose()
+    $blackBrush.Dispose()
+    $bgBrush.Dispose()
+    $g.Dispose()
+    
     $outPath = Join-Path $dir $name
     $bmp.Save($outPath, [System.Drawing.Imaging.ImageFormat]::Png)
-    $g.Dispose()
     $bmp.Dispose()
 }
 
@@ -45,4 +78,4 @@ Make-Logo "Square310x310Logo.png" 310 310
 Make-Logo "Wide310x150Logo.png" 310 150
 Make-Logo "StoreLogo.png" 50 50
 Make-Logo "StoreLogo300.png" 300 300
-Write-Host "NP logo assets centered and scaled successfully."
+Write-Host "Modern rounded NP logo assets generated successfully with pure black text and exact vector centering."
